@@ -4,6 +4,16 @@ import { loadImageFile, newId, nowTime } from "../../utils";
 import {
   AVATAR_COLORS,
   AVATAR_COLOR_IDS,
+  BATTERY_MODES,
+  BATTERY_MODE_IDS,
+  LOW_BATTERY,
+  NETWORKS,
+  NETWORK_IDS,
+  SIGNAL_LEVELS,
+  batteryLook,
+  canForward,
+  signalBars,
+  withNetwork,
   DEFAULT_SCENE_SEC,
   MAX_SCENE_SEC,
   MIN_SCENE_SEC,
@@ -31,7 +41,7 @@ import {
   timeAllowed,
   timeBounds,
 } from "../../model";
-import { PixelBattery, PocoBattery } from "../StatusBar/StatusBar";
+import StatusBar, { PixelBattery, PocoBattery } from "../StatusBar/StatusBar";
 import "./index.css";
 
 /* Editor dialogs. They live outside the phone element and carry .no-export,
@@ -150,6 +160,19 @@ const ErrorText = ({ children }) =>
     </p>
   ) : null;
 
+const Toggle = ({ label, checked, onChange, hint }) => {
+  const id = useId();
+  return (
+    <div className="field toggleField">
+      <label className="toggleRow" htmlFor={id}>
+        <input id={id} type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+        <span>{label}</span>
+      </label>
+      {hint && <p className="dialogHint toggleHint">{hint}</p>}
+    </div>
+  );
+};
+
 /* ---------- Clock ---------- */
 
 const ClockDialog = ({ close }) => {
@@ -219,6 +242,7 @@ const ClockDialog = ({ close }) => {
 const BatteryDialog = ({ close }) => {
   const { phone, setPhone } = useContext(AppContext);
   const [value, setValue] = useState(String(phone.battery));
+  const [mode, setMode] = useState(BATTERY_MODES[phone.batteryMode] ? phone.batteryMode : "normal");
   const [error, setError] = useState("");
   const parsed = parseBattery(value);
   const save = () => {
@@ -226,9 +250,10 @@ const BatteryDialog = ({ close }) => {
       setError(parsed.error);
       return;
     }
-    setPhone((p) => ({ ...p, battery: parsed.value }));
+    setPhone((p) => ({ ...p, battery: parsed.value, batteryMode: mode }));
     close();
   };
+  const autoLow = mode === "normal" && parsed.ok && batteryLook(parsed.value, mode) === "low";
   const Preview = phone.preset === "pocox7" ? PocoBattery : PixelBattery;
   return (
     <Modal
@@ -260,10 +285,74 @@ const BatteryDialog = ({ close }) => {
           }}
         />
         <div className={`batteryPreview sb-${phone.preset}`} aria-hidden="true">
-          {parsed.ok && <Preview level={parsed.value} />}
+          {parsed.ok && <Preview level={parsed.value} mode={mode} />}
         </div>
       </div>
       <ErrorText>{error}</ErrorText>
+      <Choice
+        label="Battery state"
+        value={mode}
+        options={BATTERY_MODE_IDS.map((id) => ({ value: id, label: BATTERY_MODES[id] }))}
+        onChange={setMode}
+      />
+      <p className="dialogHint">
+        {mode === "charging"
+          ? "Green with a charging bolt, at any level."
+          : mode === "low"
+            ? "Red at any level, like battery saver."
+            : `White. Turns red on its own below ${LOW_BATTERY}%${autoLow ? " (it will be red now)" : ""}.`}
+      </p>
+    </Modal>
+  );
+};
+
+/* ---------- Network ---------- */
+
+const NetworkDialog = ({ close }) => {
+  const { phone, setPhone } = useContext(AppContext);
+  const [network, setNetwork] = useState(NETWORKS[phone.network] ? phone.network : "wifi");
+  const [signal, setSignal] = useState(signalBars(phone.signal));
+  const save = () => {
+    setPhone((p) => withNetwork(p, { network, signal }));
+    close();
+  };
+  const preview = withNetwork(phone, { network, signal });
+  return (
+    <Modal
+      title="Network"
+      onClose={close}
+      onSubmit={save}
+      actions={
+        <>
+          <button type="button" onClick={close}>
+            Cancel
+          </button>
+          <button type="submit" className="primary">
+            Save network
+          </button>
+        </>
+      }
+    >
+      <Choice
+        label="Connection"
+        value={network}
+        options={NETWORK_IDS.map((id) => ({ value: id, label: NETWORKS[id].label }))}
+        onChange={setNetwork}
+      />
+      <Choice
+        label="Signal bars"
+        value={signal}
+        options={SIGNAL_LEVELS.map((n) => ({ value: n, label: String(n) }))}
+        onChange={setSignal}
+      />
+      <div className="networkPreview" aria-hidden="true" inert>
+        <StatusBar settings={preview} />
+      </div>
+      <p className="dialogHint">
+        {network === "wifi"
+          ? "Signal bars with the Wi-Fi icon."
+          : `"${NETWORKS[network].badge}" left of the signal bars, without the Wi-Fi icon.`}
+      </p>
     </Modal>
   );
 };
@@ -546,8 +635,12 @@ const TimeDialog = ({ close, dialog }) => {
   const [h, m] = (message?.time || "00:00").split(":");
   const [hour, setHour] = useState(h);
   const [minute, setMinute] = useState(m);
+  const [forwarded, setForwarded] = useState(message?.forwarded === true);
+  const [fwdButton, setFwdButton] = useState(message?.forwardButton === true);
   const [error, setError] = useState("");
   if (!message) return null;
+  const forwardable = canForward(message);
+  const photo = messageType(message) === "image";
   const bounds = timeBounds(messageList, index);
   const parsed = parseMessageTime(hour, minute, bounds);
   // A divider can go above any message except the first one of a day.
@@ -558,8 +651,10 @@ const TimeDialog = ({ close, dialog }) => {
       setError(parsed.error);
       return;
     }
+    const extra = forwardable ? { forwarded } : {};
+    if (photo) extra.forwardButton = fwdButton;
     setMessageList((list) =>
-      list.map((x) => (x.msgId === message.msgId ? { ...x, time: parsed.value } : x))
+      list.map((x) => (x.msgId === message.msgId ? { ...x, time: parsed.value, ...extra } : x))
     );
     close();
   };
@@ -570,7 +665,7 @@ const TimeDialog = ({ close, dialog }) => {
 
   return (
     <Modal
-      title="Message time"
+      title={forwardable ? "Message options" : "Message time"}
       onClose={close}
       onSubmit={save}
       actions={
@@ -588,7 +683,7 @@ const TimeDialog = ({ close, dialog }) => {
             Cancel
           </button>
           <button type="submit" className="primary">
-            Save time
+            {forwardable ? "Save" : "Save time"}
           </button>
         </>
       }
@@ -603,6 +698,22 @@ const TimeDialog = ({ close, dialog }) => {
         Shown as <b>{parsed.ok ? displayTime(parsed.value) : "--.--"}</b>. {boundsHint(bounds)}{" "}
         The same time as the message before it is fine.
       </p>
+      {forwardable && (
+        <Toggle
+          label="Forwarded (Diteruskan)"
+          checked={forwarded}
+          onChange={setForwarded}
+          hint="Shows the italic “Diteruskan” label above the message."
+        />
+      )}
+      {photo && (
+        <Toggle
+          label="Forward button beside the photo"
+          checked={fwdButton}
+          onChange={setFwdButton}
+          hint="The round quick-forward arrow WhatsApp shows next to photos."
+        />
+      )}
     </Modal>
   );
 };
@@ -805,6 +916,8 @@ const Dialogs = () => {
       return <ClockDialog {...props} />;
     case "battery":
       return <BatteryDialog {...props} />;
+    case "network":
+      return <NetworkDialog {...props} />;
     case "call":
       return <CallDialog key={dialog.editId || dialog.media} {...props} />;
     case "voice":

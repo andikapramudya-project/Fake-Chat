@@ -68,10 +68,13 @@ Untuk folder lokal yang sudah ada, buka terminal di folder proyek lalu jalankan
 | Mengubah kontak | Klik nama atau status di header. Klik foto untuk memilih warna avatar atau mengunggah foto. |
 | Menyembunyikan status kontak | Menu **⋮ → Show contact status**. Teks status disimpan dan muncul lagi saat diaktifkan. |
 | Mengubah jam | Klik jam di status bar, isi jam (00–23) dan menit (00–59), lalu **Save clock**. Jam tidak berjalan sendiri dan tidak mengubah waktu pesan. |
-| Mengubah baterai | Klik ikon baterai, isi 0–100, lalu **Save battery**. |
+| Mengubah baterai | Klik ikon baterai, isi 0–100, pilih **Normal** (putih, otomatis merah di bawah 20%), **Charging** (hijau dengan ikon petir), atau **Low (red)**, lalu **Save battery**. |
+| Mengubah jaringan | Klik ikon sinyal, pilih **Wi-Fi**, **LTE**, atau **5G** dan jumlah batang sinyal (1–4), lalu **Save network**. LTE/5G tampil di kiri sinyal tanpa ikon Wi-Fi. |
+| Header telepon saja | Menu **⋮ → Phone icon only (▾)** menyembunyikan ikon video dan menampilkan telepon dengan ▾ (seperti chat bisnis). Ikon telepon menambah telepon suara, ▾ menambah panggilan video. |
 | Memilih gaya ponsel | Menu **⋮ → Pixel 8 Pro** atau **Poco X7 5G**. |
 | Menambah panggilan | Ikon telepon di header menambah **telepon suara**, ikon video menambah **panggilan video**. Pilih arah, hasil, durasi (jika terjawab), dan waktu, lalu **Add call**. Klik kartu untuk mengedit atau menghapusnya. |
 | Mengubah jam pesan | Tekan-tahan (atau klik kanan) gelembung pesan, panggilan, pesan suara, atau foto. Jam tidak boleh lebih awal dari pesan sebelumnya atau lebih lambat dari pesan sesudahnya. |
+| Pesan terusan | Tekan-tahan (atau klik kanan) teks, foto, atau pesan suara, lalu centang **Forwarded (Diteruskan)**. Untuk foto, centang juga **Forward button beside the photo** untuk tombol panah bulat di samping foto. Tidak tersedia untuk panggilan. |
 | Mengubah tanggal | Klik label tanggal ("Hari ini") di atas chat. |
 | Menambah pemisah tanggal | Menu **⋮ → Add date divider** (pesan berikutnya muncul di bawahnya), atau tombol **Add date above** di dialog jam pesan. Klik pemisah untuk mengubah atau menghapusnya. Tanggal harus berurutan. |
 | Pesan suara | Dengan kotak pesan kosong, klik mikrofon hijau. Pilih pengirim, durasi pesan suara, dan lama adegan rekaman di video, lalu **Start simulation**. Gunakan tombol kirim atau tempat sampah pada panel rekaman. Untuk **Them**, gunakan tombol **Send/Discard** di atas kotak pesan. |
