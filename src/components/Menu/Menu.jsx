@@ -10,7 +10,7 @@ import {
   clearFocus,
   MESSAGE_GAP,
 } from "../../utils";
-import { PRESETS, PRESET_IDS, buildTimeline, withPreset } from "../../model";
+import { PRESETS, PRESET_IDS, buildTimeline, messageType, withPreset } from "../../model";
 import "./index.css";
 
 
@@ -30,6 +30,7 @@ const icons = {
   clear:
     "M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12ZM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4Z",
   help: "M11 18h2v-2h-2v2Zm1-16a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm0-14a4 4 0 0 0-4 4h2a2 2 0 1 1 4 0c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5a4 4 0 0 0-4-4Z",
+  date: "M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z",
   code: "M9.4 16.6 4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4Zm5.2 0 4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4Z",
 };
 
@@ -52,6 +53,7 @@ const Menu = () => {
     setPhone,
     recording,
     setRecording,
+    openDialog,
   } = useContext(AppContext);
   const menuRef = useRef();
 
@@ -108,6 +110,8 @@ const Menu = () => {
       for (let i = 0; i < tmpMessageList.length; i++) {
         const item = timeline.items[i];
         const message = tmpMessageList[i];
+        // Date dividers show up together with the message after them.
+        if (messageType(message) === "date") continue;
         if (item.sceneStart !== null) {
           await sleep((item.sceneStart - now) * 1000, controller.signal);
           now = item.sceneStart;
@@ -243,6 +247,13 @@ const Menu = () => {
       role: "menuitemcheckbox",
       checked: phone.showContactStatus,
       onClick: toggleStatus,
+    },
+    { divider: true },
+    {
+      label: "Add date divider",
+      icon: icons.date,
+      onClick: () => openDialog({ kind: "date" }),
+      disabled: empty,
     },
     { divider: true },
     { label: "Take screenshot", icon: icons.camera, onClick: takeScreenshot },

@@ -112,17 +112,6 @@ export const PauseIcon = (p) => (
   </svg>
 );
 
-/** Small call-log arrow: incoming points down-left, outgoing up-right. */
-export const CallArrow = ({ direction, ...p }) => (
-  <Line {...p} width={2.4}>
-    {direction === "incoming" ? (
-      <path d="M17 7 7 17M7 9.5V17h7.5" />
-    ) : (
-      <path d="M7 17 17 7M9.5 7H17v7.5" />
-    )}
-  </Line>
-);
-
 export const PersonIcon = (p) => (
   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" {...p}>
     <circle cx="12" cy="8.2" r="4" fill="currentColor" />
@@ -136,12 +125,49 @@ export const SendIcon = (p) => (
   </Svg>
 );
 
-// WhatsApp's default "no photo" avatars (dark theme): green for contacts,
-// violet for your own profile.
+// Your own "no photo" avatar on voice notes (violet, like WhatsApp dark theme).
+// The contact avatar comes from model.js (gray by default, or a chosen color/photo).
 const avatarSvg = (bg, fg) =>
   "data:image/svg+xml;utf8," +
   encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212 212"><rect width="212" height="212" fill="${bg}"/><circle cx="106" cy="88" r="21" fill="${fg}"/><path d="M66 140c0-17 18-27 40-27s40 10 40 27v6H66z" fill="${fg}"/></svg>`
   );
-export const DEFAULT_AVATAR = avatarSvg("#103529", "#25d366");
 export const SELF_AVATAR = avatarSvg("#242446", "#a690fd");
+
+const HANDSET =
+  "M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z";
+const CAMERA =
+  "M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z";
+
+/**
+ * Call-card glyph like WhatsApp: a filled handset (or camera) with the call
+ * direction arrow in its corner. Incoming points in, outgoing points out.
+ */
+export const CallCardIcon = ({ media, direction, ...p }) => {
+  const video = media === "video";
+  const arrow =
+    direction === "incoming"
+      ? video
+        ? "M21 3.6 16.2 8.4M16.2 4.6v3.8H20"
+        : "M20.6 3.4 14.6 9.4M14.6 5v4.4H19"
+      : video
+        ? "M16.2 8.4 21 3.6M17.2 3.6H21v3.8"
+        : "M14.6 9.4 20.6 3.4M16.2 3.4h4.4v4.4";
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" {...p}>
+      {video ? (
+        <path d={CAMERA} fill="currentColor" transform="translate(-0.2 4.6) scale(0.82)" />
+      ) : (
+        <path d={HANDSET} fill="currentColor" />
+      )}
+      <path
+        d={arrow}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};

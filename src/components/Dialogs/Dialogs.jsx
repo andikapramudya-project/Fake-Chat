@@ -1,19 +1,35 @@
 import React, { useContext, useEffect, useId, useRef, useState } from "react";
 import { AppContext } from "../../App";
-import { newId } from "../../utils";
+import { loadImageFile, newId, nowTime } from "../../utils";
 import {
+  AVATAR_COLORS,
+  AVATAR_COLOR_IDS,
   DEFAULT_SCENE_SEC,
   MAX_SCENE_SEC,
   MIN_SCENE_SEC,
+  avatarSrc,
+  boundsHint,
   callSummary,
+  colorAvatar,
+  dateAllowed,
+  dateBounds,
+  dateLabel,
+  displayTime,
   formatClock,
+  isoDate,
+  messageType,
+  nextMessageTime,
   normalizeCall,
   pad2,
   parseBattery,
   parseClock,
   parseDuration,
   parseScene,
+  parseMessageTime,
   parseTime,
+  suggestDate,
+  timeAllowed,
+  timeBounds,
 } from "../../model";
 import { PixelBattery, PocoBattery } from "../StatusBar/StatusBar";
 import "./index.css";
@@ -39,7 +55,7 @@ const Modal = ({ title, onClose, onSubmit, children, actions }) => {
     // Keep Tab inside the dialog.
     if (event.key === "Tab") {
       const items = [...ref.current.querySelectorAll("input, button, select")].filter(
-        (el) => !el.disabled
+        (el) => !el.disabled && el.getClientRects().length > 0
       );
       const firstEl = items[0];
       const lastEl = items[items.length - 1];
@@ -255,19 +271,23 @@ const BatteryDialog = ({ close }) => {
 /* ---------- Call history ---------- */
 
 const CallDialog = ({ close, dialog }) => {
-  const { phone, messageList, setMessageList } = useContext(AppContext);
-  const editing = dialog.editId
-    ? messageList.find((m) => m.msgId === dialog.editId)
-    : null;
+  const { messageList, setMessageList } = useContext(AppContext);
+  const editIndex = dialog.editId ? messageList.findIndex((m) => m.msgId === dialog.editId) : -1;
+  const editing = editIndex >= 0 ? messageList[editIndex] : null;
   const start = editing
     ? normalizeCall(editing.call)
     : { media: dialog.media || "voice", direction: "outgoing", result: "answered", durationSec: 65 };
-  const [media, setMedia] = useState(start.media);
+  // The header button decides the kind: the phone icon adds voice calls, the
+  // camera icon adds video calls. Editing keeps the kind of the call.
+  const media = start.media;
   const [direction, setDirection] = useState(start.direction);
   const [result, setResult] = useState(start.result);
   const [minutes, setMinutes] = useState(String(Math.floor((start.durationSec || 0) / 60)));
   const [seconds, setSeconds] = useState(pad2((start.durationSec || 0) % 60));
-  const [time, setTime] = useState(editing?.time ?? formatClock(phone.hour, phone.minute));
+  const bounds = editing ? timeBounds(messageList, editIndex) : timeBounds(messageList, messageList.length);
+  const [time, setTime] = useState(
+    () => editing?.time ?? nextMessageTime(messageList, nowTime())
+  );
   const [errors, setErrors] = useState({});
 
   const answered = result === "answered";
@@ -279,6 +299,7 @@ const CallDialog = ({ close, dialog }) => {
     const next = {};
     if (!duration.ok) next.duration = duration.error;
     if (!t.ok) next.time = t.error;
+    else if (!timeAllowed(t.value, bounds)) next.time = boundsHint(bounds);
     if (Object.keys(next).length) {
       setErrors(next);
       return;
@@ -306,7 +327,7 @@ const CallDialog = ({ close, dialog }) => {
 
   return (
     <Modal
-      title={editing ? "Edit call" : media === "video" ? "Add video call" : "Add voice call"}
+      title={`${editing ? "Edit" : "Add"} ${media === "video" ? "video call" : "voice call"}`}
       onClose={close}
       onSubmit={save}
       actions={
@@ -325,15 +346,6 @@ const CallDialog = ({ close, dialog }) => {
         </>
       }
     >
-      <Choice
-        label="Call type"
-        value={media}
-        onChange={setMedia}
-        options={[
-          { value: "voice", label: "Voice" },
-          { value: "video", label: "Video" },
-        ]}
-      />
       <Choice
         label="Direction"
         value={direction}
@@ -386,8 +398,8 @@ const CallDialog = ({ close, dialog }) => {
       <TimeField value={time} onChange={(v) => { setTime(v); setErrors((e) => ({ ...e, time: undefined })); }} error={errors.time} />
       <ErrorText>{errors.time}</ErrorText>
       <p className="dialogHint">
-        Preview: <b>{preview.title}</b> · {preview.detail}. Local simulation only, no
-        real call is made.
+        Preview: <b>{preview.title}</b> · {preview.detail} · {displayTime(time)}.{" "}
+        {boundsHint(bounds)} Local simulation only, no real call is made.
       </p>
     </Modal>
   );
@@ -525,6 +537,264 @@ const VoiceDialog = ({ close }) => {
   );
 };
 
+/* ---------- Message time (hold or right-click a bubble) ---------- */
+
+const TimeDialog = ({ close, dialog }) => {
+  const { messageList, setMessageList, setDialog } = useContext(AppContext);
+  const index = messageList.findIndex((m) => m.msgId === dialog.msgId);
+  const message = messageList[index];
+  const [h, m] = (message?.time || "00:00").split(":");
+  const [hour, setHour] = useState(h);
+  const [minute, setMinute] = useState(m);
+  const [error, setError] = useState("");
+  if (!message) return null;
+  const bounds = timeBounds(messageList, index);
+  const parsed = parseMessageTime(hour, minute, bounds);
+  // A divider can go above any message except the first one of a day.
+  const canInsertDate = index > 0 && messageType(messageList[index - 1]) !== "date";
+
+  const save = () => {
+    if (!parsed.ok) {
+      setError(parsed.error);
+      return;
+    }
+    setMessageList((list) =>
+      list.map((x) => (x.msgId === message.msgId ? { ...x, time: parsed.value } : x))
+    );
+    close();
+  };
+  const onField = (setter) => (v) => {
+    setter(v);
+    setError("");
+  };
+
+  return (
+    <Modal
+      title="Message time"
+      onClose={close}
+      onSubmit={save}
+      actions={
+        <>
+          {canInsertDate && (
+            <button
+              type="button"
+              className="aside"
+              onClick={() => setDialog({ kind: "date", insertBefore: message.msgId })}
+            >
+              Add date above
+            </button>
+          )}
+          <button type="button" onClick={close}>
+            Cancel
+          </button>
+          <button type="submit" className="primary">
+            Save time
+          </button>
+        </>
+      }
+    >
+      <div className="fieldPair">
+        <NumberField label="Hour (00–23)" name="msgHour" value={hour} error={error} onChange={onField(setHour)} />
+        <span className="fieldColon">:</span>
+        <NumberField label="Minute (00–59)" name="msgMinute" value={minute} error={error} onChange={onField(setMinute)} />
+      </div>
+      <ErrorText>{error}</ErrorText>
+      <p className="dialogHint">
+        Shown as <b>{parsed.ok ? displayTime(parsed.value) : "--.--"}</b>. {boundsHint(bounds)}{" "}
+        The same time as the message before it is fine.
+      </p>
+    </Modal>
+  );
+};
+
+/* ---------- Date divider ---------- */
+
+const DateDialog = ({ close, dialog }) => {
+  const { messageList, setMessageList, chatDate, setChatDate } = useContext(AppContext);
+  const dateId = useId();
+  const top = dialog.target === "top";
+  const editIndex = dialog.editId ? messageList.findIndex((m) => m.msgId === dialog.editId) : -1;
+  const insertIndex = dialog.insertBefore
+    ? messageList.findIndex((m) => m.msgId === dialog.insertBefore)
+    : messageList.length;
+  const index = top ? -1 : editIndex >= 0 ? editIndex : insertIndex;
+  const bounds = dateBounds(messageList, index, chatDate);
+  const current = top ? chatDate : editIndex >= 0 ? messageList[editIndex].date : null;
+  const [value, setValue] = useState(() => current ?? suggestDate(bounds));
+  const [error, setError] = useState("");
+  if ((dialog.editId && editIndex < 0) || (dialog.insertBefore && insertIndex < 0)) return null;
+
+  const range =
+    bounds.min && bounds.max
+      ? `Pick a date from ${dateLabel(bounds.min)} to ${dateLabel(bounds.max)}`
+      : bounds.min
+        ? `Pick ${dateLabel(bounds.min)} or later`
+        : bounds.max
+          ? `Pick ${dateLabel(bounds.max)} or earlier`
+          : "";
+
+  const save = () => {
+    if (!dateAllowed(value, bounds)) {
+      setError(`${range || "Pick a valid date"}, so the days stay in order.`);
+      return;
+    }
+    if (top) setChatDate(value);
+    else if (editIndex >= 0) {
+      setMessageList((list) =>
+        list.map((m) => (m.msgId === dialog.editId ? { ...m, date: value } : m))
+      );
+    } else {
+      const divider = { msgId: newId(), type: "date", date: value };
+      setMessageList((list) => {
+        const at = dialog.insertBefore
+          ? list.findIndex((m) => m.msgId === dialog.insertBefore)
+          : list.length;
+        return at < 0 ? list : [...list.slice(0, at), divider, ...list.slice(at)];
+      });
+    }
+    close();
+  };
+  const remove = () => {
+    setMessageList((list) => list.filter((m) => m.msgId !== dialog.editId));
+    close();
+  };
+
+  const adding = !top && editIndex < 0;
+  return (
+    <Modal
+      title={adding ? "Add date divider" : "Chat date"}
+      onClose={close}
+      onSubmit={save}
+      actions={
+        <>
+          {editIndex >= 0 && (
+            <button type="button" className="danger" onClick={remove}>
+              Delete divider
+            </button>
+          )}
+          <button type="button" onClick={close}>
+            Cancel
+          </button>
+          <button type="submit" className="primary">
+            {adding ? "Add divider" : "Save date"}
+          </button>
+        </>
+      }
+    >
+      <div className={`field ${error ? "hasError" : ""}`}>
+        <label htmlFor={dateId}>Date</label>
+        <input
+          id={dateId}
+          name="dividerDate"
+          type="date"
+          value={value}
+          min={bounds.min ?? undefined}
+          max={bounds.max ?? undefined}
+          onChange={(e) => {
+            setValue(e.target.value);
+            setError("");
+          }}
+          aria-invalid={error ? true : undefined}
+        />
+      </div>
+      <ErrorText>{error}</ErrorText>
+      <p className="dialogHint">
+        Shown as <b>{dateAllowed(value, { min: null, max: null }) ? dateLabel(value) : "—"}</b>
+        {" "}(today is {dateLabel(isoDate())}: “Hari ini”, yesterday “Kemarin”).
+        {adding && !dialog.insertBefore && " Messages you send next appear under this divider."}
+        {range && ` ${range}.`}
+      </p>
+    </Modal>
+  );
+};
+
+/* ---------- Profile picture ---------- */
+
+const AvatarDialog = ({ close }) => {
+  const { contact, setContact, operationRef, setOperation } = useContext(AppContext);
+  const fileRef = useRef();
+  const [error, setError] = useState("");
+  const selected = contact.avatar?.photo ? "photo" : contact.avatar?.color || "gray";
+
+  const pickFile = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || operationRef.current) return;
+    operationRef.current = "image";
+    setOperation("image");
+    try {
+      // Stays in this browser tab: the photo is never uploaded anywhere.
+      const image = await loadImageFile(file);
+      setContact((c) => ({ ...c, avatar: { photo: image.src } }));
+      setError("");
+    } catch (e) {
+      setError(e.message === "Not an image" ? "Choose an image file (JPG, PNG, WebP…)." : e.message || "Could not load this image.");
+    } finally {
+      operationRef.current = null;
+      setOperation(null);
+    }
+  };
+
+  return (
+    <Modal
+      title="Profile picture"
+      onClose={close}
+      onSubmit={close}
+      actions={
+        <button type="submit" className="primary">
+          Done
+        </button>
+      }
+    >
+      <div className="field" role="radiogroup" aria-label="Avatar color">
+        <span className="fieldLabel">No photo: pick a color</span>
+        <div className="swatches">
+          {AVATAR_COLOR_IDS.map((id) => (
+            <button
+              type="button"
+              key={id}
+              role="radio"
+              aria-checked={selected === id}
+              aria-label={AVATAR_COLORS[id].label}
+              title={AVATAR_COLORS[id].label}
+              className={`swatch ${selected === id ? "on" : ""}`}
+              onClick={() => setContact((c) => ({ ...c, avatar: { color: id } }))}
+            >
+              <img src={colorAvatar(id)} alt="" />
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="field">
+        <span className="fieldLabel">Or use a photo from this device</span>
+        <div className="photoRow">
+          {selected === "photo" && (
+            <img className="photoPreview" src={avatarSrc(contact.avatar)} alt="Current profile photo" />
+          )}
+          <button type="button" onClick={() => fileRef.current.click()}>
+            {selected === "photo" ? "Change photo" : "Upload photo"}
+          </button>
+          {selected === "photo" && (
+            <button type="button" onClick={() => setContact((c) => ({ ...c, avatar: { color: "gray" } }))}>
+              Remove photo
+            </button>
+          )}
+        </div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={pickFile}
+          aria-label="Profile photo file"
+        />
+      </div>
+      <ErrorText>{error}</ErrorText>
+      <p className="dialogHint">The photo stays in this browser and is never uploaded.</p>
+    </Modal>
+  );
+};
+
 const Dialogs = () => {
   const { dialog, setDialog } = useContext(AppContext);
   const close = () => setDialog(null);
@@ -539,6 +809,12 @@ const Dialogs = () => {
       return <CallDialog key={dialog.editId || dialog.media} {...props} />;
     case "voice":
       return <VoiceDialog {...props} />;
+    case "time":
+      return <TimeDialog key={dialog.msgId} {...props} />;
+    case "date":
+      return <DateDialog key={dialog.editId || dialog.insertBefore || dialog.target || "end"} {...props} />;
+    case "avatar":
+      return <AvatarDialog {...props} />;
     default:
       return null;
   }
