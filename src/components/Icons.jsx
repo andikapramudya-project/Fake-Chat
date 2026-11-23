@@ -37,17 +37,67 @@ export const BackIcon = (p) => (
   </Line>
 );
 
+// Header icons redrawn from the current WhatsApp Android header (2026 refs):
+// a rounded-square camera body with a solid lens wedge, and an outlined handset.
 export const VideoIcon = (p) => (
-  <Line {...p}>
-    <rect x="2.4" y="6.2" width="13.4" height="11.6" rx="1.6" />
-    <path d="M15.8 10.4 21.2 7v10l-5.4-3.4" />
-  </Line>
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" {...p}>
+    <rect
+      x="2.5"
+      y="4.8"
+      width="14.4"
+      height="14.4"
+      rx="1.9"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.1"
+    />
+    <path
+      d="M17.6 10.4 22.2 7.3v9.4l-4.6-3.1Z"
+      fill="currentColor"
+      stroke="currentColor"
+      strokeWidth="0.8"
+      strokeLinejoin="round"
+    />
+  </svg>
 );
 
+// Outlined handset (Material Symbols "call", Apache 2.0), the shape WhatsApp uses.
 export const CallIcon = (p) => (
-  <Line {...p}>
-    <path d="M5.1 3.6h3.1l1.6 4.3-2 1.4a12.3 12.3 0 0 0 6.9 6.9l1.4-2 4.3 1.6v3.1c0 .9-.7 1.5-1.6 1.5A16.6 16.6 0 0 1 3.6 5.2c0-.9.6-1.6 1.5-1.6Z" />
-  </Line>
+  <svg viewBox="0 -960 960 960" aria-hidden="true" focusable="false" {...p}>
+    <path
+      fill="currentColor"
+      d="M798-120q-125 0-247-54.5T329-329Q229-429 174.5-551T120-798q0-18 12-30t30-12h162q14 0 25 9.5t13 22.5l26 140q2 16-1 27t-11 19l-97 98q20 37 47.5 71.5T387-386q31 31 65 57.5t72 48.5l94-94q9-9 23.5-13.5T670-390l138 28q14 4 23 14.5t9 23.5v162q0 18-12 30t-30 12ZM241-600l66-66-17-94h-89q5 41 14 81t26 79Zm358 358q39 17 79.5 27t81.5 13v-88l-94-19-67 67Z"
+    />
+  </svg>
+);
+
+/** Small filled ▾ next to the handset in "phone only" headers. */
+export const DropdownIcon = (p) => (
+  <svg viewBox="0 0 12 12" aria-hidden="true" focusable="false" {...p}>
+    <path d="M1.6 3.6h8.8a.6.6 0 0 1 .45 1L6.45 9.2a.6.6 0 0 1-.9 0L1.15 4.6a.6.6 0 0 1 .45-1Z" fill="currentColor" />
+  </svg>
+);
+
+/**
+ * WhatsApp forward arrow: a bent shaft with a double chevron head. Used for
+ * the "Diteruskan" label and the round quick-forward button beside photos.
+ */
+export const ForwardIcon = ({ width = 2.2, ...p }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={width}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    focusable="false"
+    {...p}
+  >
+    <path d="M3.4 18.2v-3.4a4 4 0 0 1 4-4h8.4" />
+    <path d="M12.4 6.6 16.6 10.8 12.4 15" />
+    <path d="M17.2 6.6 21.4 10.8 17.2 15" />
+  </svg>
 );
 
 export const MoreIcon = (p) => (

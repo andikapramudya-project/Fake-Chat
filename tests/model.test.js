@@ -1,6 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  BATTERY_MODE_IDS,
+  NETWORK_IDS,
+  batteryLook,
+  canForward,
+  forwardButton,
+  forwardedLabel,
+  signalBars,
+  withNetwork,
   addDays,
   avatarSrc,
   colorAvatar,
@@ -250,4 +258,50 @@ test("avatar defaults to gray and supports colors and photos", () => {
   assert.match(decodeURIComponent(avatarSrc({ color: "blue" })), /#0e2f44/);
   assert.equal(avatarSrc({ photo: "data:image/jpeg;base64,AAA" }), "data:image/jpeg;base64,AAA");
   assert.equal(avatarSrc({ color: "nope" }), colorAvatar("gray"));
+});
+
+/* ---------- Battery state, network, forwarded ---------- */
+
+test("battery look: white by default, red below 20%, charging always green", () => {
+  assert.deepEqual(BATTERY_MODE_IDS, ["normal", "charging", "low"]);
+  assert.equal(batteryLook(58), "normal");
+  assert.equal(batteryLook(20, "normal"), "normal");
+  assert.equal(batteryLook(19, "normal"), "low");
+  assert.equal(batteryLook(0, "normal"), "low");
+  assert.equal(batteryLook(5, "charging"), "charging");
+  assert.equal(batteryLook(100, "charging"), "charging");
+  assert.equal(batteryLook(90, "low"), "low");
+  assert.equal(batteryLook(90, "unknown"), "normal");
+});
+
+test("network settings: Wi-Fi/LTE/5G and 1–4 bars, unknown values fall back", () => {
+  assert.deepEqual(NETWORK_IDS, ["wifi", "lte", "5g"]);
+  const base = defaultPhoneSettings(new Date(2026, 0, 1, 9, 30));
+  assert.equal(base.network, "wifi");
+  assert.equal(base.signal, 4);
+  assert.equal(base.batteryMode, "normal");
+  assert.equal(base.headerCalls, "both");
+  assert.deepEqual([1, 2, 3, 4].map(signalBars), [1, 2, 3, 4]);
+  assert.equal(signalBars(0), 4);
+  assert.equal(signalBars(5), 4);
+  assert.equal(signalBars("3"), 3);
+  const lte = withNetwork(base, { network: "lte", signal: 2 });
+  assert.equal(lte.network, "lte");
+  assert.equal(lte.signal, 2);
+  assert.equal(lte.hour, 9);
+  const bad = withNetwork(lte, { network: "3g" });
+  assert.equal(bad.network, "lte");
+  assert.equal(bad.signal, 2);
+});
+
+test("forwarded label only on text, photo and voice; button only on photos", () => {
+  const text = { msgId: "a", text: "hai", forwarded: true, forwardButton: true };
+  const photo = { msgId: "b", image: { src: "x", width: 1, height: 1 }, forwarded: true, forwardButton: true };
+  const voice = { msgId: "c", type: "voice", voice: { durationSec: 3 }, forwarded: true, forwardButton: true };
+  const call = { msgId: "d", type: "call", call: { media: "voice" }, forwarded: true };
+  const date = { msgId: "e", type: "date", date: "2026-11-23", forwarded: true };
+  assert.deepEqual([text, photo, voice, call, date].map(canForward), [true, true, true, false, false]);
+  assert.deepEqual([text, photo, voice, call, date].map(forwardedLabel), [true, true, true, false, false]);
+  assert.deepEqual([text, photo, voice, call, date].map(forwardButton), [false, true, false, false, false]);
+  assert.equal(forwardedLabel({ text: "lama" }), false);
 });

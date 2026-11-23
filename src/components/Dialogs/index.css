@@ -276,3 +276,48 @@
   outline: 2px solid var(--wa-text);
   outline-offset: 2px;
 }
+
+/* ---------- Checkbox toggles ---------- */
+
+.toggleField {
+  margin-top: 1.2vh;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 1vh;
+  cursor: pointer;
+}
+
+.toggleRow input {
+  width: 2vh;
+  height: 2vh;
+  accent-color: var(--wa-green);
+  cursor: pointer;
+}
+
+.toggleHint {
+  margin: 0.4vh 0 0 3vh;
+}
+
+/* ---------- Network preview ---------- */
+
+.networkPreview {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0.4vh 0 1vh;
+  border-radius: 1vh;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.networkPreview .statusBar {
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.networkPreview .sbTime,
+.networkPreview .sbBatteryBtn {
+  display: none;
+}
