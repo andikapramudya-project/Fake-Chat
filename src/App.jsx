@@ -2,7 +2,7 @@ import { createContext, useEffect, useRef, useState } from "react";
 import "./App.css";
 
 import { playMessageSound } from "./sounds";
-import { defaultPhoneSettings, soundFor } from "./model";
+import { DEFAULT_AVATAR_COLOR, defaultPhoneSettings, isoDate, soundFor } from "./model";
 import ChatScreen from "./components/ChatScreen/ChatScreen";
 import Loading from "./components/Loading/Loading";
 import Menu from "./components/Menu/Menu";
@@ -10,7 +10,6 @@ import AppBar from "./components/AppBar/AppBar";
 import Help from "./components/Help/Help";
 import StatusBar, { NavHandle } from "./components/StatusBar/StatusBar";
 import Dialogs from "./components/Dialogs/Dialogs";
-import { DEFAULT_AVATAR } from "./components/Icons";
 
 const HELP_SEEN_KEY = "fake-chat:help-seen";
 
@@ -40,11 +39,14 @@ function App() {
   const [contact, setContact] = useState({
     name: "Nickname",
     status: "online",
-    avatar: DEFAULT_AVATAR,
+    // {color} for a "no photo" avatar, or {photo} for a picture from the device.
+    avatar: { color: DEFAULT_AVATAR_COLOR },
   });
+  // Date of the first divider at the top of the chat ("Hari ini" by default).
+  const [chatDate, setChatDate] = useState(() => isoDate());
   // Who the next message is sent as: true = you (right/green), false = them.
   const [sendAsSelf, setSendAsSelf] = useState(true);
-  // Open editor dialog: {kind: "clock" | "battery" | "call" | "voice", ...}.
+  // Open editor dialog: {kind: "clock" | "battery" | "call" | "voice" | "time" | "date" | "avatar", ...}.
   const [dialog, setDialog] = useState(null);
   // Voice "recording" scene shown in the phone (draft preview, replay or video frame).
   const [recording, setRecording] = useState(null);
@@ -103,6 +105,8 @@ function App() {
         setPhone,
         contact,
         setContact,
+        chatDate,
+        setChatDate,
         sendAsSelf,
         setSendAsSelf,
         dialog,

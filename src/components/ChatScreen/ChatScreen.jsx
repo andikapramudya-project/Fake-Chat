@@ -5,7 +5,21 @@ import RecordingPanel from "./RecordingPanel";
 import { EmojiIcon, AttachIcon, CameraIcon, MicIcon, SendIcon } from "../Icons";
 import { AppContext } from "../../App";
 import { newId, nowTime, loadImageFile } from "../../utils";
-import { isGroupStart, isSelf } from "../../model";
+import { dateLabel, isGroupStart, isSelf, messageType, nextMessageTime } from "../../model";
+
+/** Date divider ("Hari ini", "Kemarin", …). Click it to pick another date. */
+const DateChip = ({ date, onClick, componentRef }) => (
+  <button
+    type="button"
+    className="dayChip"
+    ref={componentRef || undefined}
+    onClick={onClick}
+    data-date={date}
+    title="Click to change the date"
+  >
+    {dateLabel(date)}
+  </button>
+);
 
 const ChatScreen = () => {
   const [chatInput, setChatInput] = useState("");
@@ -23,7 +37,13 @@ const ChatScreen = () => {
     openDialog,
     recording,
     setRecording,
+    chatDate,
   } = useContext(AppContext);
+
+  // New messages get the current time, but never one before the last message
+  // of the day, so the chat always reads in order.
+  const append = (message) =>
+    setMessageList((list) => [...list, { ...message, time: nextMessageTime(list, nowTime()) }]);
 
   const fileInputRef = useRef();
   const [dragging, setDragging] = useState(false);
@@ -48,9 +68,8 @@ const ChatScreen = () => {
             text: caption,
             image,
             self: sendAsSelf,
-            time: nowTime(),
           };
-          setMessageList((list) => [...list, message]);
+          append(message);
           caption = "";
           sent = true;
           playFor(message);
@@ -100,8 +119,8 @@ const ChatScreen = () => {
 
   const sendMessage = () => {
     if (!chatInput.trim()) return;
-    const message = { msgId: newId(), type: "text", text: chatInput, self: sendAsSelf, time: nowTime() };
-    setMessageList((list) => [...list, message]);
+    const message = { msgId: newId(), type: "text", text: chatInput, self: sendAsSelf };
+    append(message);
     setChatInput("");
     playFor(message);
   };
@@ -122,10 +141,9 @@ const ChatScreen = () => {
       type: "voice",
       voice: { durationSec: draft.durationSec, sceneSec: draft.sceneSec },
       self: draft.self,
-      time: nowTime(),
     };
     setRecording(null);
-    setMessageList((list) => [...list, message]);
+    append(message);
     playFor(message);
   };
   // You are recording: WhatsApp replaces the composer with the recording bar.
@@ -164,10 +182,25 @@ const ChatScreen = () => {
             <br />
             Use the <b>You / Them</b> switch to pick the sender, or
             double-click any bubble to flip it.
+            <br />
+            Hold or right-click a bubble to change its time; click the date to change it.
           </div>
         )}
-        {messageList.length > 0 && <div className="dayChip">Today</div>}
-        {messageList.map((message, index) => (
+        {messageList.length > 0 && (
+          <DateChip
+            date={chatDate}
+            onClick={() => openDialog({ kind: "date", target: "top" })}
+          />
+        )}
+        {messageList.map((message, index) =>
+          messageType(message) === "date" ? (
+            <DateChip
+              key={message.msgId}
+              date={message.date}
+              componentRef={index === messageList.length - 1 ? lastMessageRef : null}
+              onClick={() => openDialog({ kind: "date", editId: message.msgId })}
+            />
+          ) : (
           <ChatMessage
             key={message.msgId}
             message={message}
@@ -175,7 +208,8 @@ const ChatScreen = () => {
             first={isGroupStart(messageList, index)}
             componentRef={index === messageList.length - 1 ? lastMessageRef : null}
           />
-        ))}
+          )
+        )}
         </div>
       </div>
 
@@ -208,7 +242,7 @@ const ChatScreen = () => {
             className="chatBox"
             rows={Math.min(5, chatInput.split("\n").length)}
             value={chatInput}
-            placeholder="Message"
+            placeholder="Ketik pesan"
             aria-label="Message"
             onChange={(e) => setChatInput(e.target.value)}
             onKeyDown={onKeyDown}

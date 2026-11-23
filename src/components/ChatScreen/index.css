@@ -95,14 +95,33 @@
 }
 
 .dayChip {
+  display: block;
   width: fit-content;
   margin: 0.6vh auto 0.8vh;
   padding: 0.5vh 1.2vh;
+  border: 0;
   border-radius: 0.8vh;
   background: var(--wa-chip);
   color: var(--wa-muted);
+  font: inherit;
   font-size: 1.5vh;
+  line-height: 1.3;
   box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13);
+  cursor: pointer;
+}
+
+.dayChip:focus {
+  outline: none;
+}
+
+.dayChip:focus-visible {
+  outline: 2px solid var(--wa-green);
+  outline-offset: 2px;
+}
+
+/* A divider in the middle of the chat gets the same breathing room as WhatsApp. */
+.message + .dayChip {
+  margin-top: 1.4vh;
 }
 
 .chatInput {

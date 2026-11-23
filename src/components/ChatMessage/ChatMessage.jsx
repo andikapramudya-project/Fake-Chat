@@ -1,21 +1,15 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { AppContext } from "../../App";
 import {
+  avatarSrc,
   callSummary,
+  displayTime,
   formatClockDuration,
   messageType,
   normalizeCall,
   waveformBars,
 } from "../../model";
-import {
-  CallArrow,
-  CallIcon,
-  MicIcon,
-  PauseIcon,
-  PlayIcon,
-  SELF_AVATAR,
-  VideoIcon,
-} from "../Icons";
+import { CallCardIcon, MicIcon, PauseIcon, PlayIcon, SELF_AVATAR } from "../Icons";
 import "./index.css";
 
 export const Ticks = () => (
@@ -33,48 +27,112 @@ export const Ticks = () => (
 
 const Meta = ({ time, ticks }) => (
   <span className="meta">
-    {time}
+    {displayTime(time)}
     {ticks && <Ticks />}
   </span>
 );
+
+/* ---------- Hold (or right-click) to change the time ---------- */
+
+const LONG_PRESS_MS = 500;
+const MOVE_TOLERANCE = 10;
+
+/**
+ * Press and hold a bubble (touch or mouse), or right-click it, to open the
+ * time editor. The click that ends a long press is swallowed, so it never
+ * also plays a voice note or opens the call editor.
+ */
+export const useLongPress = (onLongPress) => {
+  const timer = useRef(null);
+  const start = useRef(null);
+  const fired = useRef(false);
+  const cancel = () => {
+    clearTimeout(timer.current);
+    timer.current = null;
+    start.current = null;
+  };
+  useEffect(() => () => clearTimeout(timer.current), []);
+  return {
+    onPointerDown: (event) => {
+      fired.current = false;
+      if (event.button !== 0) return; // right-click goes through onContextMenu
+      start.current = { x: event.clientX, y: event.clientY };
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => {
+        timer.current = null;
+        fired.current = true;
+        onLongPress();
+      }, LONG_PRESS_MS);
+    },
+    onPointerMove: (event) => {
+      if (!start.current) return;
+      const dx = event.clientX - start.current.x;
+      const dy = event.clientY - start.current.y;
+      if (Math.hypot(dx, dy) > MOVE_TOLERANCE) cancel();
+    },
+    onPointerUp: cancel,
+    onPointerCancel: cancel,
+    onPointerLeave: cancel,
+    onContextMenu: (event) => {
+      event.preventDefault();
+      if (fired.current) return; // touch long press already opened it
+      cancel();
+      fired.current = true;
+      onLongPress();
+    },
+    onClickCapture: (event) => {
+      if (!fired.current) return;
+      fired.current = false;
+      event.stopPropagation();
+      event.preventDefault();
+    },
+  };
+};
+
+const useTimeEditor = (message) => {
+  const { openDialog } = useContext(AppContext);
+  return useLongPress(() => openDialog({ kind: "time", msgId: message.msgId }));
+};
+
+const HOLD_HINT = "Hold or right-click to change the time";
 
 /* ---------- Call history card ---------- */
 
 const CallCard = ({ message, componentRef }) => {
   const { openDialog } = useContext(AppContext);
+  const press = useTimeEditor(message);
   const call = normalizeCall(message.call);
   const { title, detail, missed } = callSummary(call);
   const outgoing = call.direction === "outgoing";
-  const Glyph = call.media === "video" ? VideoIcon : CallIcon;
   const edit = () => openDialog({ kind: "call", editId: message.msgId });
   return (
     <div
-      className={`message callMsg ${outgoing ? "mr" : "ml"} ${missed ? "missed" : ""}`}
+      className={`message callMsg first ${outgoing ? "mr" : "ml"} ${missed ? "missed" : ""}`}
       ref={componentRef || undefined}
       data-type="call"
       data-media={call.media}
       data-direction={call.direction}
       data-result={call.result}
+      title={`Click to edit the call. ${HOLD_HINT}.`}
+      {...press}
     >
       <button
         type="button"
         className="callEdit"
         onClick={edit}
-        title="Click to edit or delete this call"
-        aria-label={`${title}, ${detail}. Edit call`}
+        aria-label={`${title}, ${detail}, ${displayTime(message.time)}. Edit call`}
       >
         <span className="callBadge">
-          <Glyph className="callGlyph" />
+          <CallCardIcon media={call.media} direction={call.direction} className="callGlyph" />
         </span>
         <span className="callText">
           <span className="callTitle">{title}</span>
-          <span className="callDetail">
-            <CallArrow direction={call.direction} className="callArrow" />
-            {detail}
+          <span className="callDetailRow">
+            <span className="callDetail">{detail}</span>
+            <Meta time={message.time} />
           </span>
         </span>
       </button>
-      <Meta time={message.time} />
     </div>
   );
 };
@@ -85,6 +143,7 @@ const BAR_COUNT = 36;
 
 const VoiceBubble = ({ message, left, first, componentRef, onFlip }) => {
   const { contact, operation } = useContext(AppContext);
+  const press = useTimeEditor(message);
   const duration = Math.max(1, message.voice?.durationSec || 1);
   const bars = waveformBars(message.msgId, BAR_COUNT);
   // Simulated playback: purely visual, there is no recorded audio.
@@ -125,15 +184,16 @@ const VoiceBubble = ({ message, left, first, componentRef, onFlip }) => {
 
   const shown = playing || progress > 0 ? progress * duration : duration;
   const playedBars = Math.round(progress * BAR_COUNT);
-  const avatar = left ? contact.avatar : SELF_AVATAR;
+  const avatar = left ? avatarSrc(contact.avatar) : SELF_AVATAR;
 
   return (
     <div
       onClick={onFlip}
       className={`message voiceMsg ${left ? "ml" : "mr"} ${first ? "first" : ""}`}
-      title="Double-click to switch sides"
+      title={`Double-click to switch sides. ${HOLD_HINT}.`}
       ref={componentRef || undefined}
       data-type="voice"
+      {...press}
     >
       <div className="voiceRow">
         <span className="voiceAvatar">
@@ -178,6 +238,7 @@ const VoiceBubble = ({ message, left, first, componentRef, onFlip }) => {
 
 const ChatMessage = ({ message, left, first, componentRef }) => {
   const { setMessageList } = useContext(AppContext);
+  const press = useTimeEditor(message);
   const { text, image, time, msgId } = message;
   const type = messageType(message);
 
@@ -216,9 +277,10 @@ const ChatMessage = ({ message, left, first, componentRef }) => {
       className={`message ${left ? "ml" : "mr"} ${first ? "first" : ""} ${
         image ? "imageMsg" : ""
       }`}
-      title="Double-click to switch sides"
+      title={`Double-click to switch sides. ${HOLD_HINT}.`}
       ref={componentRef || undefined}
       data-type={type}
+      {...press}
     >
       {image ? (
         <>
