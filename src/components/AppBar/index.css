@@ -34,19 +34,20 @@
   flex-shrink: 0;
 }
 
-#pp {
-  display: none;
-}
-
 .ppLabel {
   height: 4.1vh;
   flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: none;
   cursor: pointer;
   border-radius: 50%;
   transition: box-shadow 0.2s;
 }
 
-.ppLabel:hover {
+.ppLabel:hover,
+.ppLabel:focus-visible {
+  outline: none;
   box-shadow: 0 0 0 2px var(--wa-green);
 }
 

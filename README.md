@@ -16,6 +16,13 @@ Pemrosesan chat dan ekspor dilakukan di browser tanpa backend aplikasi.
 
 - Percakapan dua arah dengan pemilih pengirim **You / Them**.
 - Nama kontak, foto profil, dan status dapat diubah; baris status dapat disembunyikan.
+  Foto profil bawaan abu-abu, bisa diganti warna avatar polos atau foto dari perangkat.
+- Isi chat berbahasa Indonesia seperti WhatsApp: "Hari ini", "Ketik pesan", jam "16.01",
+  "Telepon suara", "13 dtk", "Tidak dijawab", "Ketuk untuk menelepon balik".
+- Pemisah tanggal yang bisa diklik untuk memilih tanggal ("Hari ini", "Kemarin", nama hari,
+  atau tanggal lengkap), dan bisa ditambah di tengah percakapan.
+- Tekan-tahan atau klik kanan pesan apa pun untuk mengubah jam dan menitnya. Jam dibatasi
+  antara pesan sebelum dan sesudahnya (boleh sama) agar urutannya tetap logis.
 - Dua gaya status bar: **Pixel 8 Pro** dan **Poco X7 5G**, dengan jam (24 jam) dan
   baterai (0–100%) yang dapat diatur. Mengganti gaya tidak mengubah jam dan baterai.
 - Kartu riwayat panggilan suara/video (masuk/keluar; terjawab, tidak terjawab, dibatalkan)
@@ -58,12 +65,15 @@ Untuk folder lokal yang sudah ada, buka terminal di folder proyek lalu jalankan
 
 | Kebutuhan | Langkah |
 | --- | --- |
-| Mengubah kontak | Klik foto, nama, atau status di header. |
+| Mengubah kontak | Klik nama atau status di header. Klik foto untuk memilih warna avatar atau mengunggah foto. |
 | Menyembunyikan status kontak | Menu **⋮ → Show contact status**. Teks status disimpan dan muncul lagi saat diaktifkan. |
 | Mengubah jam | Klik jam di status bar, isi jam (00–23) dan menit (00–59), lalu **Save clock**. Jam tidak berjalan sendiri dan tidak mengubah waktu pesan. |
 | Mengubah baterai | Klik ikon baterai, isi 0–100, lalu **Save battery**. |
 | Memilih gaya ponsel | Menu **⋮ → Pixel 8 Pro** atau **Poco X7 5G**. |
-| Menambah panggilan | Klik ikon video atau telepon di header, pilih arah, hasil, durasi (jika terjawab), dan waktu, lalu **Add call**. Klik kartu untuk mengedit atau menghapusnya. |
+| Menambah panggilan | Ikon telepon di header menambah **telepon suara**, ikon video menambah **panggilan video**. Pilih arah, hasil, durasi (jika terjawab), dan waktu, lalu **Add call**. Klik kartu untuk mengedit atau menghapusnya. |
+| Mengubah jam pesan | Tekan-tahan (atau klik kanan) gelembung pesan, panggilan, pesan suara, atau foto. Jam tidak boleh lebih awal dari pesan sebelumnya atau lebih lambat dari pesan sesudahnya. |
+| Mengubah tanggal | Klik label tanggal ("Hari ini") di atas chat. |
+| Menambah pemisah tanggal | Menu **⋮ → Add date divider** (pesan berikutnya muncul di bawahnya), atau tombol **Add date above** di dialog jam pesan. Klik pemisah untuk mengubah atau menghapusnya. Tanggal harus berurutan. |
 | Pesan suara | Dengan kotak pesan kosong, klik mikrofon hijau. Pilih pengirim, durasi pesan suara, dan lama adegan rekaman di video, lalu **Start simulation**. Gunakan tombol kirim atau tempat sampah pada panel rekaman. Untuk **Them**, gunakan tombol **Send/Discard** di atas kotak pesan. |
 | Mengirim teks | Ketik lalu tekan **Enter** atau tombol kirim. **Shift + Enter** untuk baris baru. |
 | Mengganti pengirim | Klik pemilih **You / Them** sebelum mengirim. |
