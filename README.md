@@ -15,7 +15,12 @@ Pemrosesan chat dan ekspor dilakukan di browser tanpa backend aplikasi.
 ## Fitur
 
 - Percakapan dua arah dengan pemilih pengirim **You / Them**.
-- Nama kontak, foto profil, status, dan jam ponsel dapat diubah.
+- Nama kontak, foto profil, dan status dapat diubah; baris status dapat disembunyikan.
+- Dua gaya status bar: **Pixel 8 Pro** dan **Poco X7 5G**, dengan jam (24 jam) dan
+  baterai (0–100%) yang dapat diatur. Mengganti gaya tidak mengubah jam dan baterai.
+- Kartu riwayat panggilan suara/video (masuk/keluar; terjawab, tidak terjawab, dibatalkan)
+  yang dapat diedit dan dihapus.
+- Simulasi rekaman dan pesan suara You/Them, tanpa mikrofon dan tanpa audio asli.
 - Pesan teks multiline dan foto dengan caption; mendukung pilih file, paste, serta drag-and-drop.
 - Gambar dikecilkan hingga sisi terpanjang 1280 piksel; batas per file 15 MB.
 - Ekspor tampilan chat yang sedang terlihat menjadi PNG.
@@ -43,7 +48,7 @@ Untuk folder lokal yang sudah ada, buka terminal di folder proyek lalu jalankan
 | Perintah | Fungsi |
 | --- | --- |
 | `npm start` / `npm run dev` | Menjalankan server pengembangan |
-| `npm test` | Menguji waktu tunggu dan pembatalan replay |
+| `npm test` | Menguji model data (jam, baterai, panggilan, pesan suara, timeline) serta pembatalan replay |
 | `npm run test:browser` | Menguji alur aplikasi di Chromium; jalankan `npx playwright install --no-shell chromium` sekali sebelumnya |
 | `npm run build` | Membuat aplikasi produksi di `build/` |
 | `npm run preview` | Membuka hasil build secara lokal |
@@ -53,8 +58,13 @@ Untuk folder lokal yang sudah ada, buka terminal di folder proyek lalu jalankan
 
 | Kebutuhan | Langkah |
 | --- | --- |
-| Mengubah kontak | Klik foto, nama, atau status di header. Kosongkan status untuk menyembunyikannya. |
-| Mengubah jam | Klik jam di kiri atas. |
+| Mengubah kontak | Klik foto, nama, atau status di header. |
+| Menyembunyikan status kontak | Menu **⋮ → Show contact status**. Teks status disimpan dan muncul lagi saat diaktifkan. |
+| Mengubah jam | Klik jam di status bar, isi jam (00–23) dan menit (00–59), lalu **Save clock**. Jam tidak berjalan sendiri dan tidak mengubah waktu pesan. |
+| Mengubah baterai | Klik ikon baterai, isi 0–100, lalu **Save battery**. |
+| Memilih gaya ponsel | Menu **⋮ → Pixel 8 Pro** atau **Poco X7 5G**. |
+| Menambah panggilan | Klik ikon video atau telepon di header, pilih arah, hasil, durasi (jika terjawab), dan waktu, lalu **Add call**. Klik kartu untuk mengedit atau menghapusnya. |
+| Pesan suara | Dengan kotak pesan kosong, klik mikrofon hijau. Pilih pengirim, durasi pesan suara, dan lama adegan rekaman di video, lalu **Start simulation**. Gunakan tombol kirim atau tempat sampah pada panel rekaman. Untuk **Them**, gunakan tombol **Send/Discard** di atas kotak pesan. |
 | Mengirim teks | Ketik lalu tekan **Enter** atau tombol kirim. **Shift + Enter** untuk baris baru. |
 | Mengganti pengirim | Klik pemilih **You / Them** sebelum mengirim. |
 | Memindahkan pesan | Klik dua kali pada gelembung pesan. |
@@ -67,7 +77,21 @@ Untuk folder lokal yang sudah ada, buka terminal di folder proyek lalu jalankan
 
 Pada layar landscape, aplikasi menampilkan bingkai ponsel 9:16. Screenshot
 menyimpan area yang terlihat, bukan seluruh riwayat chat panjang.
-Kontrol editor dan kredit pengelola berada di luar hasil ekspor.
+Kontrol editor, dialog pengaturan, dan kredit pengelola berada di luar hasil ekspor.
+Panel "sedang merekam" adalah isi adegan, jadi ikut tersimpan bila sedang ditampilkan.
+
+Pada replay dan video, pesan suara didahului adegan rekaman sepanjang
+pengaturan **Recording scene** (bawaan 3 detik), terlepas dari durasi pesan suaranya.
+Timer dan waveform dihitung dari waktu frame. Kartu panggilan tidak memutar suara notifikasi.
+
+### Catatan gaya status bar
+
+- **Pixel 8 Pro** mengikuti screenshot referensi (resolusi 1008×2244, sama dengan
+  mode FHD+ Pixel 8 Pro): baterai pil terisi dengan angka di dalam.
+- **Poco X7 5G** belum memiliki screenshot referensi. Gaya yang dipakai adalah asumsi
+  HyperOS (jam tebal, bar sinyal tipis, baterai garis luar dengan persentase di samping).
+- Font asli perangkat (Google Sans, MiSans) tidak disertakan; keduanya memakai Roboto.
+- Lubang kamera tidak digambar.
 
 ## Batasan dan privasi
 
@@ -105,12 +129,13 @@ dan menerbitkan `build/`. Pull request menjalankan pemeriksaan tanpa deployment.
 .github/workflows/    Pemeriksaan dan deployment GitHub Pages
 src/
   config.js          Identitas pengelola dan repository
+  model.js           Model pesan, pengaturan ponsel, label panggilan, dan timeline
   App.jsx            State, layout, dan penguncian editor
   utils.js           Pengolahan gambar dan screenshot
   timing.js          Waktu tunggu yang dapat dibatalkan
   video.js           Renderer video WebCodecs melalui Mediabunny
   sounds.js          Audio pesan dan timeline video
-  components/        Kontak, chat, menu, panduan, dan progres
+  components/        Status bar, kontak, chat, dialog, menu, panduan, dan progres
 public/              Manifest dan aset statis
 tests/               Pengujian regresi
 NOTICE.md            Asal-usul dan status hak pihak ketiga

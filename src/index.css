@@ -1,17 +1,20 @@
 :root {
   /* WhatsApp Android dark theme */
-  --wa-bg: #0b141a;
-  --wa-header: #0b141a;
+  --wa-bg: #0a1014;
+  --wa-header: #0a1014;
   --wa-panel: #233138;
-  --wa-in: #202c33;
+  --wa-in: #20272b;
   --wa-out: #144d37;
-  --wa-input: #202c33;
-  --wa-chip: #182229;
-  --wa-text: #e9edef;
-  --wa-muted: #8696a0;
+  --wa-input: #20272b;
+  --wa-chip: #1d2427;
+  --wa-text: #f7f8fa;
+  --wa-muted: #8d9598;
   --wa-green: #21c063;
-  --wa-on-green: #0b141a;
+  --wa-on-green: #0a1014;
   --wa-tick: #53bdeb;
+  --wa-missed: #f15c6d;
+  --wa-meta-out: rgba(247, 248, 250, 0.6);
+  --wa-meta-in: rgba(247, 248, 250, 0.6);
   --font: "Roboto", system-ui, -apple-system, "Segoe UI", "Helvetica Neue",
     Arial, sans-serif;
 }

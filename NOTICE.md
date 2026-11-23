@@ -27,8 +27,10 @@ Tidak ada lisensi baru yang diterapkan pada seluruh kode awal.
 - html-to-image: kontributor proyek; MIT.
 - Mediabunny: kontributor proyek; MPL-2.0.
 - Roboto: The Roboto Project Authors; SIL Open Font License 1.1.
-- `src/components/Icons.jsx` menyebut Material Icons (Apache-2.0).
-  Pertahankan atribusi tersebut; asal setiap path ikon belum diverifikasi satu per satu.
+- `src/components/Icons.jsx` memuat sebagian ikon Material Icons (Apache-2.0), yaitu
+  titik tiga dan kirim; pertahankan atribusinya. Ikon header, composer, perekaman, dan
+  status bar digambar ulang sebagai SVG lokal untuk proyek ini dengan mencocokkan bentuk
+  pada screenshot referensi; screenshot referensi tidak disimpan di repository.
 - `src/images/whatsappLight.jpg`, `src/messageSend.mp3`, ikon di `public/`, dan
   gambar di `docs/` adalah aset bawaan folder awal. Pencipta dan izin redistribusinya
   belum terverifikasi. Jangan menyatakannya sebagai karya asli Andika Pramudya.

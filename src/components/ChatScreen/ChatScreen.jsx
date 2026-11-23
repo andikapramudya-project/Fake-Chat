@@ -1,17 +1,29 @@
 import React, { useContext, useRef, useState } from "react";
 import "./index.css";
 import ChatMessage from "../ChatMessage/ChatMessage";
+import RecordingPanel from "./RecordingPanel";
 import { EmojiIcon, AttachIcon, CameraIcon, MicIcon, SendIcon } from "../Icons";
 import { AppContext } from "../../App";
 import { newId, nowTime, loadImageFile } from "../../utils";
+import { isGroupStart, isSelf } from "../../model";
 
 const ChatScreen = () => {
   const [chatInput, setChatInput] = useState("");
-  // Who the next message is sent as: true = you (right/green), false = them (left).
-  const [sendAsSelf, setSendAsSelf] = useState(true);
 
-  const { messageList, setMessageList, playBip, lastMessageRef, operationRef, setOperation, setIsMenuOpen } =
-    useContext(AppContext);
+  const {
+    messageList,
+    setMessageList,
+    playFor,
+    lastMessageRef,
+    operationRef,
+    setOperation,
+    setIsMenuOpen,
+    sendAsSelf,
+    setSendAsSelf,
+    openDialog,
+    recording,
+    setRecording,
+  } = useContext(AppContext);
 
   const fileInputRef = useRef();
   const [dragging, setDragging] = useState(false);
@@ -32,6 +44,7 @@ const ChatScreen = () => {
           // Capture the caption before React processes the state updater.
           const message = {
             msgId: newId(),
+            type: "image",
             text: caption,
             image,
             self: sendAsSelf,
@@ -40,7 +53,7 @@ const ChatScreen = () => {
           setMessageList((list) => [...list, message]);
           caption = "";
           sent = true;
-          playBip(sendAsSelf);
+          playFor(message);
         } catch (error) {
           console.error(error);
           alert(error.message || "Could not load this image.");
@@ -87,13 +100,36 @@ const ChatScreen = () => {
 
   const sendMessage = () => {
     if (!chatInput.trim()) return;
-    setMessageList((list) => [
-      ...list,
-      { msgId: newId(), text: chatInput, self: sendAsSelf, time: nowTime() },
-    ]);
+    const message = { msgId: newId(), type: "text", text: chatInput, self: sendAsSelf, time: nowTime() };
+    setMessageList((list) => [...list, message]);
     setChatInput("");
-    playBip(sendAsSelf);
+    playFor(message);
   };
+
+  // With an empty composer the green button is the microphone: it opens the
+  // voice-note simulation instead of sending.
+  const onMainButton = () => {
+    if (chatInput.trim()) sendMessage();
+    else openDialog({ kind: "voice" });
+  };
+
+  const draft = recording?.mode === "draft" ? recording : null;
+  const discardDraft = () => setRecording(null);
+  const sendDraft = () => {
+    if (!draft) return;
+    const message = {
+      msgId: draft.seed,
+      type: "voice",
+      voice: { durationSec: draft.durationSec, sceneSec: draft.sceneSec },
+      self: draft.self,
+      time: nowTime(),
+    };
+    setRecording(null);
+    setMessageList((list) => [...list, message]);
+    playFor(message);
+  };
+  // You are recording: WhatsApp replaces the composer with the recording bar.
+  const selfRecording = recording && recording.self !== false;
 
   // Enter sends, Shift+Enter adds a new line.
   const onKeyDown = (event) => {
@@ -124,6 +160,8 @@ const ChatScreen = () => {
             <br />
             Send images with the 📎 or camera icon, or paste / drop them here.
             <br />
+            The green mic simulates a voice note; the header icons add calls.
+            <br />
             Use the <b>You / Them</b> switch to pick the sender, or
             double-click any bubble to flip it.
           </div>
@@ -131,19 +169,29 @@ const ChatScreen = () => {
         {messageList.length > 0 && <div className="dayChip">Today</div>}
         {messageList.map((message, index) => (
           <ChatMessage
-            text={message.text}
-            image={message.image}
-            time={message.time}
             key={message.msgId}
-            msgId={message.msgId}
-            left={message.self !== true}
-            first={index === 0 || messageList[index - 1].self !== message.self}
+            message={message}
+            left={!isSelf(message)}
+            first={isGroupStart(messageList, index)}
             componentRef={index === messageList.length - 1 ? lastMessageRef : null}
           />
         ))}
         </div>
       </div>
 
+      {draft && draft.self === false && (
+        <div className="themRecording no-export" role="group" aria-label="Contact recording preview">
+          <span>Them is recording a voice message…</span>
+          <button type="button" onClick={discardDraft}>Discard</button>
+          <button type="button" className="primary" onClick={sendDraft}>Send</button>
+        </div>
+      )}
+
+      {selfRecording ? (
+        <div className="chatBar recordingBar">
+          <RecordingPanel recording={recording} onDiscard={discardDraft} onSend={sendDraft} />
+        </div>
+      ) : (
       <div className="chatBar">
         <button
           className={`senderToggle no-export ${sendAsSelf ? "self" : "other"}`}
@@ -187,17 +235,18 @@ const ChatScreen = () => {
         </div>
         <button
           className="sendBtn"
-          onClick={sendMessage}
-          aria-label="Send"
-          title={chatInput ? "Send" : "Type a message to send"}
+          onClick={onMainButton}
+          aria-label={chatInput.trim() ? "Send" : "Record voice message"}
+          title={chatInput.trim() ? "Send" : "Simulate a voice message (no microphone used)"}
         >
-          {chatInput ? (
+          {chatInput.trim() ? (
             <SendIcon className="sendIcon" />
           ) : (
             <MicIcon className="micIcon" />
           )}
         </button>
       </div>
+      )}
     </div>
   );
 };
