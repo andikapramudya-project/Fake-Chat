@@ -154,7 +154,7 @@
 }
 
 /* Charging (reference: green #1acb47 fill, dark digits, bolt instead of the
-   terminal) and low (red fill). */
+   terminal). */
 .look-charging .pxBatteryFill {
   background: #1acb47;
 }
@@ -167,8 +167,9 @@
 .look-charging .pxBattery::after {
   display: none;
 }
+/* Pixel low battery (reference: pure red #ff0f02 fill, gray body, dark digits). */
 .look-low .pxBatteryFill {
-  background: #f2564b;
+  background: #ff0f02;
 }
 
 .sbBolt {
