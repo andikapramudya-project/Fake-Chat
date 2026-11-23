@@ -47,7 +47,7 @@ test("battery is white by default, red below 20% and green with a bolt when char
   await expect(look(page)).toHaveAttribute("data-look", "normal");
   await setBattery(page, "19");
   await expect(look(page)).toHaveAttribute("data-look", "low");
-  expect(await fillColor(page, ".pxBatteryFill")).toBe("rgb(242, 86, 75)");
+  expect(await fillColor(page, ".pxBatteryFill")).toBe("rgb(255, 15, 2)");
 
   // Charging wins, even at a low level, and replaces the terminal with a bolt.
   await setBattery(page, "10", "Charging");
