@@ -3,14 +3,14 @@
   display: flow-root;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  padding: 0.75vh 1.1vh 0.9vh;
-  margin: 0.35vh 2vh;
-  border-radius: 1vh;
+  padding: 0.7vh 1.05vh 0.85vh;
+  margin: 0.35vh 1.9vh;
+  border-radius: 1.05vh;
   width: fit-content;
-  max-width: 78%;
+  max-width: 80%;
   color: var(--wa-text);
-  font-size: 2vh;
-  line-height: 1.35;
+  font-size: 1.87vh;
+  line-height: 1.28;
   box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13);
   user-select: none;
   cursor: pointer;
@@ -73,10 +73,10 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4vh;
-  margin: 0.9vh 0 -0.5vh 1.2vh;
-  font-size: 1.35vh;
+  margin: 0.95vh 0 -0.5vh 1.1vh;
+  font-size: 1.38vh;
   line-height: 1;
-  color: rgba(233, 237, 239, 0.6);
+  color: rgba(247, 248, 250, 0.6);
   white-space: nowrap;
 }
 
@@ -135,4 +135,236 @@
 .caption {
   display: flow-root;
   padding: 0.6vh 0.7vh 0.4vh;
+}
+
+/* ---------- Call history cards ---------- */
+
+/* Calls are cards on their own: no tail, no grouping, no ticks. */
+.callMsg {
+  width: 62%;
+  max-width: 32vh;
+  padding: 0.9vh 1vh 0.8vh;
+  cursor: default;
+}
+
+.callEdit {
+  display: flex;
+  align-items: center;
+  gap: 1.2vh;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.callEdit:focus {
+  outline: none;
+}
+
+.callEdit:focus-visible {
+  outline: 2px solid var(--wa-green);
+  outline-offset: 2px;
+  border-radius: 0.6vh;
+}
+
+.callBadge {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 4.4vh;
+  height: 4.4vh;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.ml .callBadge {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.callGlyph {
+  width: 2.3vh;
+  height: 2.3vh;
+  color: var(--wa-text);
+}
+
+.missed .callGlyph {
+  color: var(--wa-missed);
+}
+
+.callText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.2vh;
+}
+
+.callTitle {
+  font-size: 1.87vh;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.callDetail {
+  display: flex;
+  align-items: center;
+  gap: 0.4vh;
+  font-size: 1.5vh;
+  color: rgba(247, 248, 250, 0.6);
+  white-space: nowrap;
+}
+
+.callArrow {
+  width: 1.5vh;
+  height: 1.5vh;
+  flex-shrink: 0;
+  color: var(--wa-green);
+}
+
+.missed .callArrow {
+  color: var(--wa-missed);
+}
+
+.callMsg .meta {
+  float: none;
+  display: flex;
+  justify-content: flex-end;
+  margin: 0.1vh 0 0;
+}
+
+/* ---------- Voice messages ---------- */
+
+.voiceMsg {
+  width: 80%;
+  max-width: 40vh;
+  padding: 0.85vh 1.1vh 0.7vh 0.9vh;
+}
+
+.voiceRow {
+  display: flex;
+  align-items: center;
+}
+
+.voiceAvatar {
+  position: relative;
+  flex-shrink: 0;
+  width: 5.35vh;
+  height: 5.35vh;
+}
+
+.voiceAvatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.voiceMic {
+  position: absolute;
+  right: -0.55vh;
+  bottom: -0.35vh;
+  width: 1.85vh;
+  height: 1.85vh;
+  color: #8f949a;
+}
+
+.voiceMic.unplayed {
+  color: var(--wa-green);
+}
+
+.voicePlay {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 3.6vh;
+  height: 3.6vh;
+  margin: 0 0.6vh 0 1.9vh;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #8d9598;
+  cursor: pointer;
+  align-self: flex-start;
+  margin-top: 0.75vh;
+}
+
+.voicePlay svg {
+  width: 2.6vh;
+  height: 2.6vh;
+}
+
+.voicePlay:focus {
+  outline: none;
+}
+
+.voicePlay:focus-visible {
+  outline: 2px solid var(--wa-green);
+  border-radius: 50%;
+}
+
+.voiceTrack {
+  flex: 1;
+  min-width: 0;
+}
+
+.voiceWave {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 3.1vh;
+  margin-top: 0.9vh;
+  padding-left: 1.5vh;
+}
+
+.voiceBar {
+  width: 0.2vh;
+  min-height: 0.3vh;
+  border-radius: 0.2vh;
+  background: rgba(247, 248, 250, 0.32);
+}
+
+.ml .voiceBar {
+  background: rgba(247, 248, 250, 0.3);
+}
+
+.voiceBar.played {
+  background: rgba(247, 248, 250, 0.85);
+}
+
+.voiceDot {
+  position: absolute;
+  top: 50%;
+  width: 1.35vh;
+  height: 1.35vh;
+  margin-left: 0;
+  border-radius: 50%;
+  background: #a6abad;
+  transform: translateY(-50%);
+}
+
+.voiceInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 0.45vh;
+  padding-left: 0.1vh;
+}
+
+.voiceDuration {
+  font-size: 1.38vh;
+  line-height: 1;
+  color: rgba(247, 248, 250, 0.6);
+  font-variant-numeric: tabular-nums;
+}
+
+.voiceInfo .meta {
+  float: none;
+  margin: 0;
 }

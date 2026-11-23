@@ -1,20 +1,21 @@
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { AppContext } from "../../App";
 import { loadImageFile } from "../../utils";
-import {
-  BackIcon,
-  VideoIcon,
-  CallIcon,
-  MoreIcon,
-  DEFAULT_AVATAR,
-} from "../Icons";
+import { BackIcon, VideoIcon, CallIcon, MoreIcon } from "../Icons";
 import "./index.css";
 
 const AppBar = () => {
-  const { isMenuOpen, setIsMenuOpen, operationRef, setOperation } = useContext(AppContext);
-  const [pp, setPp] = useState(DEFAULT_AVATAR);
-  const [nickname, setNickname] = useState("Nickname");
-  const [status, setStatus] = useState("online");
+  const {
+    isMenuOpen,
+    setIsMenuOpen,
+    operationRef,
+    setOperation,
+    contact,
+    setContact,
+    phone,
+    openDialog,
+    recording,
+  } = useContext(AppContext);
 
   const menuClick = (event) => {
     event.stopPropagation();
@@ -30,7 +31,7 @@ const AppBar = () => {
     setIsMenuOpen(false);
     try {
       const image = await loadImageFile(file);
-      setPp(image.src);
+      setContact((c) => ({ ...c, avatar: image.src }));
     } catch (error) {
       alert(error.message || "Could not load the profile picture.");
     } finally {
@@ -39,47 +40,70 @@ const AppBar = () => {
     }
   };
 
+  // While the contact "records" a voice note, WhatsApp shows it in the status line.
+  const theyRecord = recording && recording.self === false;
+  const showStatus = phone.showContactStatus;
+
   return (
     <div className="appBar">
       <div className="appBarLeft">
         <BackIcon className="arrow" />
         <label htmlFor="pp" className="ppLabel" title="Change profile picture">
-          <img src={pp} alt="Profile" className="ppImage" />
+          <img src={contact.avatar} alt="Profile" className="ppImage" />
         </label>
         <input id="pp" type="file" accept="image/*" onChange={avatarChange} />
-        <div className="nameBlock">
+        <div className={`nameBlock ${showStatus ? "" : "noStatus"}`}>
           <input
             className="nickname"
             type="text"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
+            value={contact.name}
+            onChange={(e) => setContact((c) => ({ ...c, name: e.target.value }))}
             title="Click to edit the contact name"
             aria-label="Contact name"
             spellCheck={false}
           />
-          <input
-            className={`contactStatus ${status ? "" : "no-export"}`}
-            type="text"
-            placeholder="add status (optional)"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            title="Click to edit the status line (leave empty to hide)"
-            aria-label="Contact status"
-            spellCheck={false}
-          />
+          {showStatus &&
+            (theyRecord ? (
+              <span className="contactStatus recordingStatus">recording audio…</span>
+            ) : (
+              <input
+                className={`contactStatus ${contact.status ? "" : "no-export"}`}
+                type="text"
+                placeholder="add status (optional)"
+                value={contact.status}
+                onChange={(e) => setContact((c) => ({ ...c, status: e.target.value }))}
+                title="Click to edit the status line (leave empty to hide)"
+                aria-label="Contact status"
+                spellCheck={false}
+              />
+            ))}
         </div>
       </div>
       <div className="appBarRight">
-        <VideoIcon className="appBarIcons" />
-        <CallIcon className="appBarIcons" />
         <button
-          className={`menuBtn ${isMenuOpen ? "open" : ""}`}
+          className="headerBtn"
+          onClick={() => openDialog({ kind: "call", media: "video" })}
+          aria-label="Add video call"
+          title="Add a video call to the chat"
+        >
+          <VideoIcon className="appBarIcons" />
+        </button>
+        <button
+          className="headerBtn"
+          onClick={() => openDialog({ kind: "call", media: "voice" })}
+          aria-label="Add voice call"
+          title="Add a voice call to the chat"
+        >
+          <CallIcon className="appBarIcons" />
+        </button>
+        <button
+          className={`headerBtn menuBtn ${isMenuOpen ? "open" : ""}`}
           onClick={menuClick}
           aria-label="Open menu"
           aria-expanded={isMenuOpen}
-          title="Menu: screenshot, video, replay"
+          title="Menu: phone style, screenshot, video, replay"
         >
-          <MoreIcon className="appBarIcons" />
+          <MoreIcon className="appBarIcons moreIcon" />
         </button>
       </div>
     </div>

@@ -7,8 +7,10 @@ import {
   exportOptions,
   downloadUrl,
   withPinnedScroll,
+  clearFocus,
   MESSAGE_GAP,
 } from "../../utils";
+import { PRESETS, PRESET_IDS, buildTimeline, withPreset } from "../../model";
 import "./index.css";
 
 
@@ -39,13 +41,17 @@ const Menu = () => {
     setLoadPercent,
     appRef,
     setMessageList,
-    playBip,
+    playFor,
     setIsMenuOpen,
     setShowHelp,
     recordingRef,
     videoAbortRef,
     setOperation,
     operationRef,
+    phone,
+    setPhone,
+    recording,
+    setRecording,
   } = useContext(AppContext);
   const menuRef = useRef();
 
@@ -54,6 +60,8 @@ const Menu = () => {
     if (operationRef.current) return false;
     operationRef.current = name;
     setOperation(name);
+    // No focus ring or caret may end up in an export.
+    clearFocus();
     return true;
   };
   const endOperation = () => {
@@ -82,22 +90,48 @@ const Menu = () => {
     if (!beginOperation("replay")) return;
     setIsMenuOpen(false);
     const tmpMessageList = [...messageList];
+    const draft = recording;
     const controller = new AbortController();
     videoAbortRef.current = controller;
     setLoadPercent(0);
     setShowLoading(true);
     try {
+      setRecording(null);
       setMessageList([]);
+      // Same timeline as the video: voice notes get their recording scene first.
+      const timeline = buildTimeline(tmpMessageList, {
+        leadIn: MESSAGE_GAP,
+        gap: MESSAGE_GAP,
+        tail: 0,
+      });
+      let now = 0;
       for (let i = 0; i < tmpMessageList.length; i++) {
-        await sleep(MESSAGE_GAP * 1000, controller.signal);
+        const item = timeline.items[i];
+        const message = tmpMessageList[i];
+        if (item.sceneStart !== null) {
+          await sleep((item.sceneStart - now) * 1000, controller.signal);
+          now = item.sceneStart;
+          setRecording({
+            mode: "replay",
+            self: message.self === true,
+            durationSec: message.voice?.durationSec || 1,
+            sceneSec: item.sceneSec,
+            seed: message.msgId,
+            startedAt: performance.now(),
+          });
+        }
+        await sleep((item.appear - now) * 1000, controller.signal);
+        now = item.appear;
+        setRecording(null);
         setMessageList(tmpMessageList.slice(0, i + 1));
         setLoadPercent(((i + 1) / tmpMessageList.length) * 100);
-        playBip(tmpMessageList[i].self === true);
+        playFor(message);
       }
     } catch (error) {
       if (error.name !== "AbortError") console.error("Replay failed", error);
     } finally {
       setMessageList(tmpMessageList);
+      setRecording(draft);
       videoAbortRef.current = null;
       setShowLoading(false);
       setLoadPercent(0);
@@ -140,6 +174,8 @@ const Menu = () => {
         phoneEl: appRef.current,
         messages: [...messageList],
         setMessageList,
+        setRecording,
+        restoreRecording: recording,
         onProgress: setLoadPercent,
         signal: controller.signal,
       });
@@ -187,8 +223,28 @@ const Menu = () => {
     );
   };
 
+  const choosePreset = (id) => {
+    setPhone((p) => withPreset(p, id));
+  };
+  const toggleStatus = () =>
+    setPhone((p) => ({ ...p, showContactStatus: !p.showContactStatus }));
+
   const empty = messageList.length === 0;
   const items = [
+    { section: "Phone style" },
+    ...PRESET_IDS.map((id) => ({
+      label: PRESETS[id].label,
+      role: "menuitemradio",
+      checked: phone.preset === id,
+      onClick: () => choosePreset(id),
+    })),
+    {
+      label: "Show contact status",
+      role: "menuitemcheckbox",
+      checked: phone.showContactStatus,
+      onClick: toggleStatus,
+    },
+    { divider: true },
     { label: "Take screenshot", icon: icons.camera, onClick: takeScreenshot },
     { label: "Save video", icon: icons.video, onClick: saveVideo, disabled: empty },
     { label: "Replay chat", icon: icons.replay, onClick: replayChat, disabled: empty },
@@ -204,23 +260,40 @@ const Menu = () => {
       className={`menu no-export ${isMenuOpen ? "showMenu" : ""}`}
       role="menu"
     >
-      {items.map((item, i) =>
-        item.divider ? (
-          <div key={i} className="menuDivider" />
-        ) : (
+      {items.map((item, i) => {
+        if (item.divider) return <div key={i} className="menuDivider" />;
+        if (item.section) {
+          return (
+            <div key={i} className="menuSection" role="presentation">
+              {item.section}
+            </div>
+          );
+        }
+        const toggle = item.role === "menuitemradio" || item.role === "menuitemcheckbox";
+        return (
           <button
             key={item.label}
-            className="menuItems"
-            role="menuitem"
+            className={`menuItems ${toggle ? "menuToggle" : ""}`}
+            role={item.role || "menuitem"}
+            aria-checked={toggle ? item.checked : undefined}
             onClick={item.onClick}
             disabled={item.disabled}
             style={{ animationDelay: `${i * 30}ms` }}
           >
-            <Icon d={item.icon} />
+            {toggle ? (
+              <span
+                className={`menuCheck ${item.role === "menuitemradio" ? "radio" : "box"} ${
+                  item.checked ? "on" : ""
+                }`}
+                aria-hidden="true"
+              />
+            ) : (
+              <Icon d={item.icon} />
+            )}
             {item.label}
           </button>
-        )
-      )}
+        );
+      })}
       <div className="menuCredit">Maintained by {PROJECT.maintainer}</div>
     </div>
   );

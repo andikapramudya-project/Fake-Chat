@@ -14,6 +14,7 @@ import {
 } from "mediabunny";
 import { exportOptions, MESSAGE_GAP } from "./utils";
 import { renderTimelineAudio } from "./sounds";
+import { activeScene, buildTimeline, soundFor } from "./model.js";
 
 /*
  * Chat-story video export.
@@ -41,8 +42,11 @@ const easeOutBack = (x) => {
 };
 const even = (n) => Math.max(2, Math.round(n / 2) * 2);
 
-export const videoDuration = (count) =>
-  LEAD_IN + Math.max(0, count - 1) * MESSAGE_GAP + TAIL;
+const timelineFor = (messages) =>
+  buildTimeline(messages, { leadIn: LEAD_IN, gap: MESSAGE_GAP, tail: TAIL });
+
+/** Video length in seconds, including voice-recording scenes. */
+export const videoDuration = (messages) => timelineFor(messages).duration;
 
 export class VideoUnsupportedError extends Error {
   name = "VideoUnsupportedError";
@@ -53,6 +57,8 @@ export class VideoUnsupportedError extends Error {
  * @param {HTMLElement} p.phoneEl - element to film
  * @param {object[]} p.messages - full message list
  * @param {Function} p.setMessageList - React state setter
+ * @param {Function} [p.setRecording] - React setter for the voice-recording scene
+ * @param {object|null} [p.restoreRecording] - recording state to put back afterwards
  * @param {(percent: number) => void} [p.onProgress]
  * @param {AbortSignal} [p.signal]
  * @returns {Promise<{blob: Blob, extension: string}>}
@@ -61,6 +67,8 @@ export async function renderChatVideo({
   phoneEl,
   messages,
   setMessageList,
+  setRecording = () => {},
+  restoreRecording = null,
   onProgress,
   signal,
 }) {
@@ -108,8 +116,11 @@ export async function renderChatVideo({
     output.addAudioTrack(audioSource);
   }
 
-  const appear = messages.map((_, i) => LEAD_IN + i * MESSAGE_GAP);
-  const duration = videoDuration(messages.length);
+  // Each frame is computed from its own timestamp (f / FPS), never from
+  // wall-clock time, so timers and waveforms are identical on every machine.
+  const timeline = timelineFor(messages);
+  const appear = timeline.items.map((item) => item.appear);
+  const duration = timeline.duration;
   const totalFrames = Math.ceil(duration * FPS);
   const options = await exportOptions(phoneEl, { pixelRatio: scale });
 
@@ -121,7 +132,10 @@ export async function renderChatVideo({
 
     if (audioSource) {
       const audio = await renderTimelineAudio(
-        messages.map((m, i) => ({ time: appear[i], self: m.self === true })),
+        messages
+          .map((m, i) => ({ time: appear[i], sound: soundFor(m) }))
+          .filter((e) => e.sound)
+          .map((e) => ({ time: e.time, self: e.sound === "send" })),
         duration
       );
       await audioSource.add(audio);
@@ -131,7 +145,11 @@ export async function renderChatVideo({
     let offset = 0;
     let scrollFrom = 0;
     let scrollTo = 0;
+    let scrollStart = 0;
     let lastKey = "";
+    let lastScene = "";
+    let lastSceneId = "";
+    flushSync(() => setRecording(null));
 
     for (let f = 0; f < totalFrames; f++) {
       if (signal?.aborted) throw new DOMException("Cancelled", "AbortError");
@@ -140,20 +158,49 @@ export async function renderChatVideo({
       // Which messages are visible at this moment?
       let count = 0;
       while (count < appear.length && appear[count] <= t + 1e-6) count++;
+      // Voice-recording scene (you: recording bar, them: "recording audio…").
+      const scene = activeScene(timeline, messages, t);
+      const sceneId = scene ? String(scene.index) : "";
+      const sceneProgress = scene ? scene.progress.toFixed(3) : "";
+      let layoutChanged = false;
       if (count !== shown) {
         flushSync(() => setMessageList(messages.slice(0, count)));
         shown = count;
+        layoutChanged = true;
+      }
+      if (sceneId + sceneProgress !== lastScene) {
+        flushSync(() =>
+          setRecording(
+            scene
+              ? {
+                  mode: "frame",
+                  self: scene.message.self === true,
+                  durationSec: scene.message.voice?.durationSec || 1,
+                  sceneSec: timeline.items[scene.index].sceneSec,
+                  seed: scene.message.msgId,
+                  progress: scene.progress,
+                }
+              : null
+          )
+        );
+        if (sceneId !== lastSceneId) layoutChanged = true;
+        lastSceneId = sceneId;
+        lastScene = sceneId + sceneProgress;
+      }
+      if (layoutChanged) {
+        // The composer/recording bar can change height: re-measure the scroll.
         box.scrollTop = 0;
         scrollFrom = offset;
         scrollTo = Math.max(0, inner.offsetHeight - box.clientHeight);
+        scrollStart = t;
       }
 
       const since = count > 0 ? t - appear[count - 1] : Infinity;
       const p = clamp01(since / BUBBLE_ANIM);
-      offset = scrollFrom + (scrollTo - scrollFrom) * easeOutCubic(clamp01(since / SCROLL_ANIM));
+      offset = scrollFrom + (scrollTo - scrollFrom) * easeOutCubic(clamp01((t - scrollStart) / SCROLL_ANIM));
 
       // Only re-render the phone when something actually changed.
-      const key = `${count}|${p.toFixed(3)}|${offset.toFixed(1)}`;
+      const key = `${count}|${p.toFixed(3)}|${offset.toFixed(1)}|${lastScene}`;
       if (key !== lastKey) {
         lastKey = key;
         inner.style.transform = `translateY(${-offset}px)`;
@@ -184,7 +231,10 @@ export async function renderChatVideo({
     if (!finished) await output.cancel().catch(() => {});
     phoneEl.classList.remove("recording");
     inner.style.transform = "";
-    flushSync(() => setMessageList(messages));
+    flushSync(() => {
+      setMessageList(messages);
+      setRecording(restoreRecording);
+    });
     inner.querySelectorAll(".message").forEach((el) => {
       el.style.opacity = "";
       el.style.transform = "";

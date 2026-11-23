@@ -99,6 +99,25 @@ const ExportScene = () => (
   </div>
 );
 
+const ExtrasScene = () => (
+  <div className="scene">
+    <div className="miniMenu">
+      <div className="mi m1">
+        <span>📞</span>Call / video icons<em>add call history</em>
+      </div>
+      <div className="mi m2">
+        <span>🎙️</span>Green mic<em>simulated voice note</em>
+      </div>
+      <div className="mi m3">
+        <span>🕒</span>Clock &amp; battery<em>click to edit</em>
+      </div>
+      <div className="mi m4">
+        <span>📱</span>⋮ → Phone style<em>Pixel 8 Pro / Poco X7 5G</em>
+      </div>
+    </div>
+  </div>
+);
+
 const steps = [
   {
     title: "Fake Chat",
@@ -107,7 +126,7 @@ const steps = [
   },
   {
     title: "Set up the contact",
-    text: "Click the profile picture to upload any image. Click the name or status line to type your own.",
+    text: "Click the profile picture to upload any image. Click the name or status line to type your own. Turn the status line off with ⋮ → Show contact status.",
     Scene: ProfileScene,
   },
   {
@@ -119,6 +138,11 @@ const steps = [
     title: "Switch who’s talking",
     text: "Double-click (or double-tap) any bubble to move it to the other side. Or use the You / Them switch next to the input. The switch never appears in exports.",
     Scene: SwitchScene,
+  },
+  {
+    title: "Calls, voice notes and phone look",
+    text: "Click the video or phone icon to add a call card (click a card to edit or delete it). With an empty message box, the green mic starts a voice-note simulation: no microphone, no audio. Click the status bar clock or battery to change them, and pick the phone style in the ⋮ menu.",
+    Scene: ExtrasScene,
   },
   {
     title: "Export it",

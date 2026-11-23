@@ -32,6 +32,12 @@ export const exportOptions = async (node, extra = {}) => {
   return { filter: exportFilter, fontEmbedCSS, ...extra };
 };
 
+// Blur the focused control so no caret or focus ring is copied into an export.
+export const clearFocus = () => {
+  const el = document.activeElement;
+  if (el && el !== document.body) el.blur?.();
+};
+
 export const downloadUrl = (url, filename) => {
   const link = document.createElement("a");
   link.download = filename;

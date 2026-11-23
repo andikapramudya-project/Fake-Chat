@@ -1,4 +1,4 @@
-// Material icons (Apache 2.0), the same icon family the WhatsApp Android app uses.
+// Filled icons below (MoreIcon, SendIcon) come from Material Icons (Apache 2.0).
 const Svg = ({ children, className, ...rest }) => (
   <svg
     className={className}
@@ -12,22 +12,42 @@ const Svg = ({ children, className, ...rest }) => (
   </svg>
 );
 
+// Stroke icons drawn to match the WhatsApp Android dark header/composer
+// reference: rounded caps and joins, ~2px stroke on a 24px grid.
+const Line = ({ children, className, width = 2, ...rest }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={width}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    focusable="false"
+    {...rest}
+  >
+    {children}
+  </svg>
+);
+
 export const BackIcon = (p) => (
-  <Svg {...p}>
-    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-  </Svg>
+  <Line {...p}>
+    <path d="M20 12H4.6M10.6 5.4 4 12l6.6 6.6" />
+  </Line>
 );
 
 export const VideoIcon = (p) => (
-  <Svg {...p}>
-    <path d="M15 8v8H5V8h10m1-2H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4V7c0-.55-.45-1-1-1z" />
-  </Svg>
+  <Line {...p}>
+    <rect x="2.4" y="6.2" width="13.4" height="11.6" rx="1.6" />
+    <path d="M15.8 10.4 21.2 7v10l-5.4-3.4" />
+  </Line>
 );
 
 export const CallIcon = (p) => (
-  <Svg {...p}>
-    <path d="M6.54 5c.06.89.21 1.76.45 2.59l-1.2 1.2c-.41-1.2-.67-2.47-.76-3.79h1.51m9.86 12.02c.85.24 1.72.39 2.6.45v1.49c-1.32-.09-2.59-.35-3.8-.75l1.2-1.19M7.5 3H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.49c0-.55-.45-1-1-1-1.24 0-2.45-.2-3.57-.57-.1-.04-.21-.05-.31-.05-.26 0-.51.1-.71.29l-2.2 2.2c-2.83-1.45-5.15-3.76-6.59-6.59l2.2-2.2c.28-.28.36-.67.25-1.02C8.7 6.45 8.5 5.25 8.5 4c0-.55-.45-1-1-1z" />
-  </Svg>
+  <Line {...p}>
+    <path d="M5.1 3.6h3.1l1.6 4.3-2 1.4a12.3 12.3 0 0 0 6.9 6.9l1.4-2 4.3 1.6v3.1c0 .9-.7 1.5-1.6 1.5A16.6 16.6 0 0 1 3.6 5.2c0-.9.6-1.6 1.5-1.6Z" />
+  </Line>
 );
 
 export const MoreIcon = (p) => (
@@ -36,30 +56,78 @@ export const MoreIcon = (p) => (
   </Svg>
 );
 
+// WhatsApp's composer "sticker" face: rounded square with a peeled corner.
 export const EmojiIcon = (p) => (
-  <Svg {...p}>
-    <circle cx="15.5" cy="9.5" r="1.5" />
-    <circle cx="8.5" cy="9.5" r="1.5" />
-    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-4c-1.48 0-2.75-.81-3.45-2H6.88c.8 2.05 2.79 3.5 5.12 3.5s4.32-1.45 5.12-3.5h-1.67c-.7 1.19-1.97 2-3.45 2z" />
-  </Svg>
+  <Line {...p} width={1.9}>
+    <path d="M20.6 12.6V7.4a4 4 0 0 0-4-4H7.4a4 4 0 0 0-4 4v9.2a4 4 0 0 0 4 4h5.2l8-8Z" />
+    <path d="M12.6 20.6v-3.9a4.1 4.1 0 0 1 4.1-4.1h3.9" />
+    <path d="M7.6 13.6a4.6 4.6 0 0 0 3.6 2.4" />
+    <circle cx="9" cy="9.6" r=".9" fill="currentColor" stroke="none" />
+    <circle cx="15" cy="9.6" r=".9" fill="currentColor" stroke="none" />
+  </Line>
 );
 
 export const AttachIcon = (p) => (
-  <Svg {...p}>
-    <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" />
-  </Svg>
+  <Line {...p} width={1.9}>
+    <path d="M16.8 7.2v9a4.8 4.8 0 0 1-9.6 0V6.4a3.3 3.3 0 0 1 6.6 0v9.4a1.8 1.8 0 0 1-3.6 0V7.6" />
+  </Line>
 );
 
 export const CameraIcon = (p) => (
-  <Svg {...p}>
-    <path d="M14.12 4l1.83 2H20v12H4V6h4.05l1.83-2h4.24M15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2zm-3 7c1.65 0 3 1.35 3 3s-1.35 3-3 3-3-1.35-3-3 1.35-3 3-3m0-2c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" />
-  </Svg>
+  <Line {...p} width={1.9}>
+    <path d="M4.8 6.8h2.7l1.6-2.2h5.8l1.6 2.2h2.7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4.8a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Z" />
+    <circle cx="12" cy="13" r="3.6" />
+  </Line>
 );
 
 export const MicIcon = (p) => (
-  <Svg {...p}>
-    <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" />
-  </Svg>
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" {...p}>
+    <rect x="8.6" y="2.6" width="6.8" height="12.2" rx="3.4" fill="currentColor" />
+    <path
+      d="M5.6 11.2a6.4 6.4 0 0 0 12.8 0M12 17.8v3.4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+export const TrashIcon = (p) => (
+  <Line {...p} width={1.9}>
+    <path d="M4.5 6.6h15M9.4 6.6V4.4h5.2v2.2M6.4 6.6l.9 12.6a1.6 1.6 0 0 0 1.6 1.4h6.2a1.6 1.6 0 0 0 1.6-1.4l.9-12.6" />
+  </Line>
+);
+
+export const PlayIcon = (p) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" {...p}>
+    <path d="M7 4.2v15.6a.8.8 0 0 0 1.2.7l12.3-7.8a.8.8 0 0 0 0-1.4L8.2 3.5a.8.8 0 0 0-1.2.7Z" fill="currentColor" />
+  </svg>
+);
+
+export const PauseIcon = (p) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" {...p}>
+    <rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" />
+    <rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" />
+  </svg>
+);
+
+/** Small call-log arrow: incoming points down-left, outgoing up-right. */
+export const CallArrow = ({ direction, ...p }) => (
+  <Line {...p} width={2.4}>
+    {direction === "incoming" ? (
+      <path d="M17 7 7 17M7 9.5V17h7.5" />
+    ) : (
+      <path d="M7 17 17 7M9.5 7H17v7.5" />
+    )}
+  </Line>
+);
+
+export const PersonIcon = (p) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" {...p}>
+    <circle cx="12" cy="8.2" r="4" fill="currentColor" />
+    <path d="M4.4 19.4c0-3.3 3.4-5.6 7.6-5.6s7.6 2.3 7.6 5.6v.6H4.4Z" fill="currentColor" />
+  </svg>
 );
 
 export const SendIcon = (p) => (
@@ -68,27 +136,12 @@ export const SendIcon = (p) => (
   </Svg>
 );
 
-export const SignalIcon = (p) => (
-  <Svg {...p}>
-    <path d="M2 22h20V2z" />
-  </Svg>
-);
-
-export const WifiIcon = (p) => (
-  <Svg {...p}>
-    <path d="M12 21l11.5-14.3C23.05 6.36 18.57 2.5 12 2.5S.95 6.36.5 6.7L12 21z" />
-  </Svg>
-);
-
-export const BatteryIcon = (p) => (
-  <Svg {...p}>
-    <path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z" />
-  </Svg>
-);
-
-// WhatsApp's default "no photo" avatar, dark theme colors.
-export const DEFAULT_AVATAR =
+// WhatsApp's default "no photo" avatars (dark theme): green for contacts,
+// violet for your own profile.
+const avatarSvg = (bg, fg) =>
   "data:image/svg+xml;utf8," +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212 212"><rect width="212" height="212" fill="#6a7175"/><circle cx="106" cy="86" r="42" fill="#cfd4d6"/><path d="M28 196c6-44 40-68 78-68s72 24 78 68a106 106 0 0 1-156 0z" fill="#cfd4d6"/></svg>`
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212 212"><rect width="212" height="212" fill="${bg}"/><circle cx="106" cy="88" r="21" fill="${fg}"/><path d="M66 140c0-17 18-27 40-27s40 10 40 27v6H66z" fill="${fg}"/></svg>`
   );
+export const DEFAULT_AVATAR = avatarSvg("#103529", "#25d366");
+export const SELF_AVATAR = avatarSvg("#242446", "#a690fd");
