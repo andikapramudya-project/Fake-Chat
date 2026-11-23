@@ -130,20 +130,23 @@ test("voice and video call cards for every direction/result, editable and deleta
 
   const cards = page.locator(".callMsg");
   await expect(cards).toHaveCount(6);
-  await expect(cards.nth(0)).toContainText("Voice call");
-  await expect(cards.nth(0)).toContainText("3 min 20 sec");
-  await expect(cards.nth(0)).toContainText("08:15");
+  await expect(cards.nth(0)).toContainText("Telepon suara");
+  await expect(cards.nth(0)).toContainText("3 mnt 20 dtk");
+  await expect(cards.nth(0)).toContainText("08.15");
   await expect(cards.nth(0)).toHaveClass(/ml/);
-  await expect(cards.nth(1)).toContainText("Video call");
-  await expect(cards.nth(1)).toContainText("45 sec");
+  await expect(cards.nth(1)).toContainText("Panggilan video");
+  await expect(cards.nth(1)).toContainText("45 dtk");
   await expect(cards.nth(1)).toHaveClass(/mr/);
-  await expect(cards.nth(2)).toContainText("Missed voice call");
-  await expect(cards.nth(3)).toContainText("No answer");
-  await expect(cards.nth(3)).not.toContainText("Missed");
-  await expect(cards.nth(4)).toContainText("Cancelled");
-  await expect(cards.nth(5)).toContainText("Missed video call");
+  await expect(cards.nth(2)).toContainText("Telepon suara tak terjawab");
+  await expect(cards.nth(2)).toContainText("Ketuk untuk menelepon balik");
+  await expect(cards.nth(2)).toHaveClass(/missed/);
+  await expect(cards.nth(3)).toContainText("Tidak dijawab");
+  await expect(cards.nth(3)).not.toContainText("tak terjawab");
+  await expect(cards.nth(3)).not.toHaveClass(/missed/);
+  await expect(cards.nth(4)).toContainText("Dibatalkan");
+  await expect(cards.nth(5)).toContainText("Panggilan video tak terjawab");
   // No call-length text on calls that never connected.
-  for (const i of [2, 3, 4, 5]) await expect(cards.nth(i)).not.toContainText(/\d+ (sec|min)/);
+  for (const i of [2, 3, 4, 5]) await expect(cards.nth(i)).not.toContainText(/\d+ (dtk|mnt)/);
   // Call cards have no read ticks.
   await expect(page.locator(".callMsg .ticks")).toHaveCount(0);
 
@@ -152,8 +155,8 @@ test("voice and video call cards for every direction/result, editable and deleta
   await dialog(page).getByRole("radio", { name: "Missed" }).click();
   await expect(dialog(page).getByLabel("Minutes")).toHaveCount(0);
   await dialog(page).getByRole("button", { name: "Save call" }).click();
-  await expect(cards.nth(0)).toContainText("Missed voice call");
-  await expect(cards.nth(0)).not.toContainText("3 min");
+  await expect(cards.nth(0)).toContainText("Telepon suara tak terjawab");
+  await expect(cards.nth(0)).not.toContainText("3 mnt");
 
   // Delete.
   await cards.nth(1).getByRole("button").click();
@@ -194,7 +197,7 @@ test("outgoing and incoming voice messages", async ({ page }) => {
   await expect(mine.locator(".ticks")).toHaveCount(1);
 
   await startVoice(page, { sender: "Them", seconds: "7" });
-  await expect(page.locator(".recordingStatus")).toHaveText("recording audio…");
+  await expect(page.locator(".recordingStatus")).toHaveText("merekam audio…");
   await page.locator(".themRecording").getByRole("button", { name: "Send" }).click();
   const theirs = page.locator(".voiceMsg.ml");
   await expect(theirs).toHaveCount(1);
@@ -313,4 +316,187 @@ test("video with text, photo, call and voice note has the timeline length", asyn
   expect(metadata.width).toBeGreaterThan(0);
   await expect(page.locator(".message")).toHaveCount(4);
   await expect(page.locator(".phone")).not.toHaveAttribute("inert");
+});
+
+/* ---------- Header call buttons, avatar, dates and message times ---------- */
+
+test("phone icon only adds voice calls, camera icon only video calls", async ({ page }) => {
+  await page.getByRole("button", { name: "Add voice call" }).click();
+  await expect(dialog(page).getByRole("heading")).toHaveText("Add voice call");
+  await expect(dialog(page).getByRole("radio", { name: "Video" })).toHaveCount(0);
+  await dialog(page).getByRole("button", { name: "Add call" }).click();
+  await page.getByRole("button", { name: "Add video call" }).click();
+  await expect(dialog(page).getByRole("heading")).toHaveText("Add video call");
+  await dialog(page).getByRole("button", { name: "Add call" }).click();
+  const cards = page.locator(".callMsg");
+  await expect(cards.nth(0)).toHaveAttribute("data-media", "voice");
+  await expect(cards.nth(1)).toHaveAttribute("data-media", "video");
+  // Editing keeps the kind of call.
+  await cards.nth(1).getByRole("button").click();
+  await expect(dialog(page).getByRole("heading")).toHaveText("Edit video call");
+});
+
+test("call card fits its content, with a bold title and the time on the detail line", async ({ page }) => {
+  await page.setViewportSize({ width: 412, height: 915 });
+  await addCall(page, "voice", { direction: "Outgoing", result: "Answered", minutes: "0", seconds: "13", time: "16:02" });
+  const card = page.locator(".callMsg");
+  await expect(card).toContainText("Telepon suara");
+  await expect(card).toContainText("13 dtk");
+  await expect(card.locator(".meta")).toHaveText("16.02");
+  const weight = await card.locator(".callTitle").evaluate((el) => Number(getComputedStyle(el).fontWeight));
+  expect(weight).toBeGreaterThanOrEqual(600);
+  const detail = await card.locator(".callDetail").boundingBox();
+  const meta = await card.locator(".meta").boundingBox();
+  expect(Math.abs(detail.y + detail.height - (meta.y + meta.height))).toBeLessThan(6);
+  const cardBox = await card.boundingBox();
+  const screen = await page.locator(".chatMessages").boundingBox();
+  expect(cardBox.width).toBeLessThan(screen.width * 0.6);
+});
+
+test("message times use a dot and new messages never go back in time", async ({ page }) => {
+  await send(page, "Pertama");
+  const first = page.locator(".message").first();
+  await expect(first.locator(".meta")).toHaveText(/^\d{2}\.\d{2}$/);
+  // Move the first message to 23:59; the next message cannot be earlier.
+  await first.click({ button: "right" });
+  await dialog(page).getByLabel("Hour (00–23)").fill("23");
+  await dialog(page).getByLabel("Minute (00–59)").fill("59");
+  await dialog(page).getByRole("button", { name: "Save time" }).click();
+  await expect(first.locator(".meta")).toHaveText("23.59");
+  await send(page, "Kedua");
+  await expect(page.locator(".message").nth(1).locator(".meta")).toHaveText("23.59");
+});
+
+test("hold or right-click a message to change its time within its neighbours", async ({ page }) => {
+  await addCall(page, "voice", { direction: "Outgoing", result: "Answered", minutes: "0", seconds: "13", time: "09:00" });
+  await send(page, "Tengah");
+  await addCall(page, "video", { direction: "Incoming", result: "Missed", time: "23:59" });
+  const middle = page.locator(".message").nth(1);
+
+  // Right-click (desktop).
+  await middle.click({ button: "right" });
+  await expect(dialog(page).getByRole("heading")).toHaveText("Message time");
+  await expect(dialog(page)).toContainText("09:00 to 23:59");
+  await dialog(page).getByLabel("Hour (00–23)").fill("08");
+  await dialog(page).getByLabel("Minute (00–59)").fill("59");
+  await dialog(page).getByRole("button", { name: "Save time" }).click();
+  await expect(dialog(page).getByRole("alert")).toContainText("09:00 to 23:59");
+  // Equal to the previous message is allowed.
+  await dialog(page).getByLabel("Hour (00–23)").fill("09");
+  await dialog(page).getByLabel("Minute (00–59)").fill("00");
+  await dialog(page).getByRole("button", { name: "Save time" }).click();
+  await expect(dialog(page)).toHaveCount(0);
+  await expect(middle.locator(".meta")).toHaveText("09.00");
+
+  // Press and hold (touch or mouse) on a call card opens the time editor, not the call editor.
+  const call = page.locator(".callMsg").first();
+  const b = await call.boundingBox();
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(700);
+  await page.mouse.up();
+  await expect(dialog(page).getByRole("heading")).toHaveText("Message time");
+  await expect(dialog(page)).toContainText("09:00 or earlier");
+  await page.keyboard.press("Escape");
+  // A normal click still opens the call editor.
+  await call.getByRole("button").click();
+  await expect(dialog(page).getByRole("heading")).toHaveText("Edit voice call");
+  await page.keyboard.press("Escape");
+
+  // The call dialog follows the same rule.
+  await call.getByRole("button").click();
+  await dialog(page).getByLabel("Time (HH:mm)").fill("10:00");
+  await dialog(page).getByRole("button", { name: "Save call" }).click();
+  await expect(dialog(page).getByRole("alert")).toContainText("09:00 or earlier");
+});
+
+test("date chip says Hari ini, can be changed, and dividers can be added mid-chat", async ({ page }) => {
+  const iso = (offset) => page.evaluate((o) => {
+    const d = new Date();
+    d.setDate(d.getDate() + o);
+    const p = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  }, offset);
+  await send(page, "Pesan kemarin");
+  const chips = page.locator(".dayChip");
+  await expect(chips).toHaveText(["Hari ini"]);
+
+  // Top chip → yesterday.
+  await chips.first().click();
+  await dialog(page).getByLabel("Date").fill(await iso(-1));
+  await dialog(page).getByRole("button", { name: "Save date" }).click();
+  await expect(chips).toHaveText(["Kemarin"]);
+
+  // Add a divider for today; the next message goes under it with its own clock.
+  await menu(page, "Add date divider");
+  await expect(dialog(page).getByLabel("Date")).toHaveValue(await iso(0));
+  await dialog(page).getByRole("button", { name: "Add divider" }).click();
+  await send(page, "Pesan hari ini");
+  await expect(chips).toHaveText(["Kemarin", "Hari ini"]);
+  const order = await page.locator(".chatInner > .dayChip, .chatInner > .message").evaluateAll((els) =>
+    els.map((e) => (e.classList.contains("dayChip") ? `[${e.textContent}]` : e.querySelector(".messageText").textContent))
+  );
+  expect(order).toEqual(["[Kemarin]", "Pesan kemarin", "[Hari ini]", "Pesan hari ini"]);
+
+  // Dividers stay in order: the second one cannot go before the first.
+  await chips.nth(1).click();
+  await dialog(page).getByLabel("Date").fill(await iso(-1));
+  await dialog(page).getByRole("button", { name: "Save date" }).click();
+  await expect(dialog(page).getByRole("alert")).toContainText("days stay in order");
+  await page.keyboard.press("Escape");
+
+  // Insert a divider above a message from its time editor, then delete it.
+  await send(page, "Lusa");
+  await chips.first().click();
+  await dialog(page).getByLabel("Date").fill(await iso(-3));
+  await dialog(page).getByRole("button", { name: "Save date" }).click();
+  await page.locator(".message").nth(0).click({ button: "right" });
+  await expect(dialog(page).getByRole("button", { name: "Add date above" })).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await page.locator(".message").nth(2).click({ button: "right" });
+  await dialog(page).getByRole("button", { name: "Add date above" }).click();
+  await expect(dialog(page).getByRole("heading")).toHaveText("Add date divider");
+  await dialog(page).getByRole("button", { name: "Add divider" }).click();
+  await expect(chips).toHaveCount(3);
+  await chips.nth(2).click();
+  await dialog(page).getByRole("button", { name: "Delete divider" }).click();
+  await expect(chips).toHaveCount(2);
+});
+
+test("profile picture: gray by default, color options and a photo from the device", async ({ page }) => {
+  const src = () => page.locator(".ppImage").getAttribute("src");
+  expect(decodeURIComponent(await src())).toContain("#6a7175");
+  await page.getByRole("button", { name: "Change profile picture" }).click();
+  await expect(dialog(page).getByRole("radio", { name: "Gray" })).toHaveAttribute("aria-checked", "true");
+  await dialog(page).getByRole("radio", { name: "Blue" }).click();
+  expect(decodeURIComponent(await src())).toContain("#0e2f44");
+  await dialog(page).getByLabel("Profile photo file").setInputFiles("docs/chat.png");
+  await expect(dialog(page).getByRole("button", { name: "Remove photo" })).toBeVisible();
+  expect(await src()).toMatch(/^data:image\/jpeg/);
+  await dialog(page).getByRole("button", { name: "Done" }).click();
+  // The contact's voice notes use the same picture.
+  await startVoice(page, { sender: "Them" });
+  await page.locator(".themRecording").getByRole("button", { name: "Send" }).click();
+  expect(await page.locator(".voiceMsg.ml .voiceAvatar img").getAttribute("src")).toBe(await src());
+  await page.getByRole("button", { name: "Change profile picture" }).click();
+  await dialog(page).getByRole("button", { name: "Remove photo" }).click();
+  expect(decodeURIComponent(await src())).toContain("#6a7175");
+});
+
+test("composer and chat are in Indonesian", async ({ page }) => {
+  await expect(box(page)).toHaveAttribute("placeholder", "Ketik pesan");
+});
+
+test("video with date dividers keeps the timeline length", async ({ page }) => {
+  test.setTimeout(90_000);
+  await send(page, "Satu");
+  await menu(page, "Add date divider");
+  await dialog(page).getByLabel("Date").fill("2099-01-01");
+  await dialog(page).getByRole("button", { name: "Add divider" }).click();
+  await send(page, "Dua");
+  const downloadPromise = page.waitForEvent("download", { timeout: 80_000 });
+  await menu(page, "Save video");
+  await downloadPromise;
+  await expect(page.locator(".dayChip")).toHaveCount(2);
+  await expect(page.locator(".message")).toHaveCount(2);
 });

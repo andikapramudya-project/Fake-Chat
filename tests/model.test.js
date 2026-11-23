@@ -1,6 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  addDays,
+  avatarSrc,
+  colorAvatar,
+  dateAllowed,
+  dateBounds,
+  dateLabel,
+  displayTime,
+  nextMessageTime,
+  parseMessageTime,
+  suggestDate,
+  timeBounds,
   activeScene,
   batteryFill,
   buildTimeline,
@@ -66,16 +77,16 @@ test("legacy messages without type still render as text or image", () => {
   assert.equal(messageType({ type: "bogus", text: "x" }), "text");
 });
 
-test("call labels follow direction and result", () => {
+test("call labels follow direction and result (Indonesian WhatsApp wording)", () => {
   const s = (media, direction, result, durationSec = 0) =>
     callSummary({ media, direction, result, durationSec });
-  assert.deepEqual(s("voice", "outgoing", "answered", 65), { title: "Voice call", detail: "1 min 5 sec", missed: false });
-  assert.deepEqual(s("video", "incoming", "answered", 45), { title: "Video call", detail: "45 sec", missed: false });
-  assert.deepEqual(s("voice", "incoming", "missed"), { title: "Missed voice call", detail: "Tap to call back", missed: true });
-  assert.deepEqual(s("video", "incoming", "cancelled"), { title: "Missed video call", detail: "Caller hung up", missed: true });
-  // Unanswered outgoing calls are never shown as "missed".
-  assert.deepEqual(s("voice", "outgoing", "missed"), { title: "Voice call", detail: "No answer", missed: false });
-  assert.deepEqual(s("video", "outgoing", "cancelled"), { title: "Video call", detail: "Cancelled", missed: false });
+  assert.deepEqual(s("voice", "outgoing", "answered", 13), { title: "Telepon suara", detail: "13 dtk", missed: false });
+  assert.deepEqual(s("video", "incoming", "answered", 65), { title: "Panggilan video", detail: "1 mnt 5 dtk", missed: false });
+  assert.deepEqual(s("voice", "incoming", "missed"), { title: "Telepon suara tak terjawab", detail: "Ketuk untuk menelepon balik", missed: true });
+  assert.deepEqual(s("video", "incoming", "cancelled"), { title: "Panggilan video tak terjawab", detail: "Ketuk untuk menelepon balik", missed: true });
+  // Unanswered outgoing calls are never shown as missed.
+  assert.deepEqual(s("voice", "outgoing", "missed"), { title: "Telepon suara", detail: "Tidak dijawab", missed: false });
+  assert.deepEqual(s("video", "outgoing", "cancelled"), { title: "Panggilan video", detail: "Dibatalkan", missed: false });
 });
 
 test("unanswered calls carry no duration", () => {
@@ -84,11 +95,11 @@ test("unanswered calls carry no duration", () => {
 });
 
 test("natural call durations", () => {
-  assert.equal(formatCallDuration(5), "5 sec");
-  assert.equal(formatCallDuration(60), "1 min");
-  assert.equal(formatCallDuration(200), "3 min 20 sec");
-  assert.equal(formatCallDuration(3900), "1 hr 5 min");
-  assert.equal(formatCallDuration(7200), "2 hr");
+  assert.equal(formatCallDuration(5), "5 dtk");
+  assert.equal(formatCallDuration(60), "1 mnt");
+  assert.equal(formatCallDuration(200), "3 mnt 20 dtk");
+  assert.equal(formatCallDuration(3900), "1 jam 5 mnt");
+  assert.equal(formatCallDuration(7200), "2 jam");
 });
 
 test("call side comes from direction, and calls break bubble groups", () => {
@@ -152,4 +163,91 @@ test("timeline: a long voice note only adds its short scene", () => {
   assert.equal(activeScene(tl, messages, 6), null);
   // Legacy single text message keeps the old 3.5 s video length.
   assert.equal(buildTimeline([{ text: "x" }]).duration, 3.5);
+});
+
+/* ---------- Message times ---------- */
+
+const t = (time, extra = {}) => ({ type: "text", text: "x", self: true, time, ...extra });
+const day = (date) => ({ type: "date", date });
+
+test("message times display with a dot like Indonesian WhatsApp", () => {
+  assert.equal(displayTime("16:01"), "16.01");
+  assert.equal(displayTime("00:00"), "00.00");
+});
+
+test("time bounds come from the previous and next message, equal times allowed", () => {
+  const list = [t("09:00"), t("09:30"), t("10:00")];
+  assert.deepEqual(timeBounds(list, 1), { min: "09:00", max: "10:00" });
+  assert.deepEqual(timeBounds(list, 0), { min: null, max: "09:30" });
+  assert.deepEqual(timeBounds(list, 2), { min: "09:30", max: null });
+  assert.deepEqual(parseMessageTime("9", "0", timeBounds(list, 1)), { ok: true, value: "09:00" });
+  assert.deepEqual(parseMessageTime("10", "00", timeBounds(list, 1)), { ok: true, value: "10:00" });
+  assert.equal(parseMessageTime("08", "59", timeBounds(list, 1)).ok, false);
+  assert.match(parseMessageTime("10", "01", timeBounds(list, 1)).error, /09:00 to 10:00/);
+  assert.equal(parseMessageTime("24", "00", { min: null, max: null }).ok, false);
+});
+
+test("a date divider starts a new day for time bounds", () => {
+  const list = [t("23:50"), day("2026-11-23"), t("07:00"), t("08:00")];
+  assert.deepEqual(timeBounds(list, 2), { min: null, max: "08:00" });
+  assert.deepEqual(timeBounds(list, 0), { min: null, max: null });
+  assert.equal(parseMessageTime("01", "00", timeBounds(list, 2)).ok, true);
+});
+
+test("new messages never go before the last message of the day", () => {
+  assert.equal(nextMessageTime([t("15:00")], "14:00"), "15:00");
+  assert.equal(nextMessageTime([t("15:00")], "16:00"), "16:00");
+  assert.equal(nextMessageTime([t("23:00"), day("2026-11-23")], "08:00"), "08:00");
+  assert.equal(nextMessageTime([], "08:00"), "08:00");
+});
+
+/* ---------- Dates ---------- */
+
+test("date labels: Hari ini, Kemarin, weekday, full date", () => {
+  const today = "2026-11-23"; // Monday
+  assert.equal(dateLabel("2026-11-23", today), "Hari ini");
+  assert.equal(dateLabel("2026-11-22", today), "Kemarin");
+  assert.equal(dateLabel("2026-11-20", today), "Jumat");
+  assert.equal(dateLabel("2026-11-17", today), "Selasa");
+  assert.equal(dateLabel("2026-11-16", today), "16 November 2026");
+  assert.equal(dateLabel("2025-01-01", today), "1 Januari 2025");
+  assert.equal(dateLabel("2026-12-01", today), "1 Desember 2026");
+  assert.equal(addDays("2026-03-01", -1), "2026-02-28");
+});
+
+test("date dividers stay in order", () => {
+  const list = [t("09:00"), day("2026-11-20"), t("10:00"), day("2026-11-23"), t("11:00")];
+  const chatDate = "2026-11-18";
+  assert.deepEqual(dateBounds(list, -1, chatDate), { min: null, max: "2026-11-19" });
+  assert.deepEqual(dateBounds(list, 1, chatDate), { min: "2026-11-19", max: "2026-11-22" });
+  assert.deepEqual(dateBounds(list, 3, chatDate), { min: "2026-11-21", max: null });
+  // A new divider at the end comes after the last one.
+  assert.deepEqual(dateBounds(list, list.length, chatDate), { min: "2026-11-24", max: null });
+  // Inserting above the message at index 2.
+  assert.deepEqual(dateBounds(list, 2, chatDate), { min: "2026-11-21", max: "2026-11-22" });
+  assert.equal(dateAllowed("2026-11-20", { min: "2026-11-21", max: null }), false);
+  assert.equal(dateAllowed("2026-02-30", { min: null, max: null }), false);
+  assert.equal(suggestDate({ min: null, max: null }, "2026-11-23"), "2026-11-23");
+  assert.equal(suggestDate({ min: "2026-11-24", max: null }, "2026-11-23"), "2026-11-24");
+});
+
+test("date dividers are silent, break groups and appear with the next message", () => {
+  const list = [t("09:00"), day("2026-11-23"), t("10:00"), day("2026-11-24")];
+  assert.equal(soundFor(list[1]), null);
+  assert.deepEqual(list.map((_, i) => isGroupStart(list, i)), [true, true, true, true]);
+  const tl = buildTimeline(list, { leadIn: 1, gap: 2, tail: 2.5 });
+  assert.deepEqual(tl.items.map((i) => i.appear), [1, 3, 3, 5]);
+  assert.equal(tl.duration, 7.5);
+  // Dividers add no time between messages.
+  assert.equal(buildTimeline([t("1"), day("2026-01-01"), t("2")]).duration, buildTimeline([t("1"), t("2")]).duration);
+});
+
+/* ---------- Avatars ---------- */
+
+test("avatar defaults to gray and supports colors and photos", () => {
+  assert.equal(avatarSrc(undefined), colorAvatar("gray"));
+  assert.match(decodeURIComponent(colorAvatar("gray")), /#6a7175/);
+  assert.match(decodeURIComponent(avatarSrc({ color: "blue" })), /#0e2f44/);
+  assert.equal(avatarSrc({ photo: "data:image/jpeg;base64,AAA" }), "data:image/jpeg;base64,AAA");
+  assert.equal(avatarSrc({ color: "nope" }), colorAvatar("gray"));
 });

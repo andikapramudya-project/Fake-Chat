@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { AppContext } from "../../App";
-import { loadImageFile } from "../../utils";
+import { avatarSrc } from "../../model";
 import { BackIcon, VideoIcon, CallIcon, MoreIcon } from "../Icons";
 import "./index.css";
 
@@ -8,8 +8,6 @@ const AppBar = () => {
   const {
     isMenuOpen,
     setIsMenuOpen,
-    operationRef,
-    setOperation,
     contact,
     setContact,
     phone,
@@ -22,24 +20,6 @@ const AppBar = () => {
     setIsMenuOpen((p) => !p);
   };
 
-  const avatarChange = async (event) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file || operationRef.current) return;
-    operationRef.current = "image";
-    setOperation("image");
-    setIsMenuOpen(false);
-    try {
-      const image = await loadImageFile(file);
-      setContact((c) => ({ ...c, avatar: image.src }));
-    } catch (error) {
-      alert(error.message || "Could not load the profile picture.");
-    } finally {
-      operationRef.current = null;
-      setOperation(null);
-    }
-  };
-
   // While the contact "records" a voice note, WhatsApp shows it in the status line.
   const theyRecord = recording && recording.self === false;
   const showStatus = phone.showContactStatus;
@@ -48,10 +28,15 @@ const AppBar = () => {
     <div className="appBar">
       <div className="appBarLeft">
         <BackIcon className="arrow" />
-        <label htmlFor="pp" className="ppLabel" title="Change profile picture">
-          <img src={contact.avatar} alt="Profile" className="ppImage" />
-        </label>
-        <input id="pp" type="file" accept="image/*" onChange={avatarChange} />
+        <button
+          type="button"
+          className="ppLabel"
+          onClick={() => openDialog({ kind: "avatar" })}
+          aria-label="Change profile picture"
+          title="Change profile picture: color or photo"
+        >
+          <img src={avatarSrc(contact.avatar)} alt="" className="ppImage" />
+        </button>
         <div className={`nameBlock ${showStatus ? "" : "noStatus"}`}>
           <input
             className="nickname"
@@ -64,7 +49,7 @@ const AppBar = () => {
           />
           {showStatus &&
             (theyRecord ? (
-              <span className="contactStatus recordingStatus">recording audio…</span>
+              <span className="contactStatus recordingStatus">merekam audio…</span>
             ) : (
               <input
                 className={`contactStatus ${contact.status ? "" : "no-export"}`}
@@ -84,7 +69,7 @@ const AppBar = () => {
           className="headerBtn"
           onClick={() => openDialog({ kind: "call", media: "video" })}
           aria-label="Add video call"
-          title="Add a video call to the chat"
+          title="Add a video call (Panggilan video) to the chat"
         >
           <VideoIcon className="appBarIcons" />
         </button>
@@ -92,7 +77,7 @@ const AppBar = () => {
           className="headerBtn"
           onClick={() => openDialog({ kind: "call", media: "voice" })}
           aria-label="Add voice call"
-          title="Add a voice call to the chat"
+          title="Add a voice call (Telepon suara) to the chat"
         >
           <CallIcon className="appBarIcons" />
         </button>

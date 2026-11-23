@@ -194,3 +194,85 @@
   outline: 2px solid var(--wa-text);
   outline-offset: 2px;
 }
+
+.dialogActions .aside {
+  margin-right: auto;
+}
+
+.field input[type="date"] {
+  color-scheme: dark;
+  font-variant-numeric: normal;
+}
+
+/* ---------- Profile picture ---------- */
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1vh;
+}
+
+.swatch {
+  width: 5.2vh;
+  height: 5.2vh;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  box-shadow: 0 0 0 2px transparent;
+  transition: box-shadow 0.15s;
+}
+
+.swatch img,
+.photoPreview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.swatch.on {
+  box-shadow: 0 0 0 2px var(--wa-panel), 0 0 0 4px var(--wa-green);
+}
+
+.swatch:focus {
+  outline: none;
+}
+
+.swatch:focus-visible {
+  box-shadow: 0 0 0 2px var(--wa-panel), 0 0 0 4px var(--wa-text);
+}
+
+.photoRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1vh;
+}
+
+.photoPreview {
+  width: 5.2vh;
+  height: 5.2vh;
+  box-shadow: 0 0 0 2px var(--wa-panel), 0 0 0 4px var(--wa-green);
+}
+
+.photoRow button {
+  padding: 0.9vh 1.6vh;
+  border-radius: 2.2vh;
+  border: 1px solid rgba(141, 149, 152, 0.35);
+  background: none;
+  color: var(--wa-text);
+  font-size: 1.6vh;
+  cursor: pointer;
+}
+
+.photoRow button:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.photoRow button:focus-visible {
+  outline: 2px solid var(--wa-text);
+  outline-offset: 2px;
+}

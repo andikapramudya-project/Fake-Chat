@@ -126,7 +126,7 @@ const steps = [
   },
   {
     title: "Set up the contact",
-    text: "Click the profile picture to upload any image. Click the name or status line to type your own. Turn the status line off with ⋮ → Show contact status.",
+    text: "Click the profile picture to pick an avatar color (gray by default) or upload a photo from your device. Click the name or status line to type your own. Turn the status line off with ⋮ → Show contact status.",
     Scene: ProfileScene,
   },
   {
@@ -136,7 +136,7 @@ const steps = [
   },
   {
     title: "Switch who’s talking",
-    text: "Double-click (or double-tap) any bubble to move it to the other side. Or use the You / Them switch next to the input. The switch never appears in exports.",
+    text: "Double-click (or double-tap) any bubble to move it to the other side. Press and hold (or right-click) a bubble to change its time, and click the date chip to change the date. Or use the You / Them switch next to the input. The switch never appears in exports.",
     Scene: SwitchScene,
   },
   {
