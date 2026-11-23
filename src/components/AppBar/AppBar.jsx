@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { AppContext } from "../../App";
 import { avatarSrc } from "../../model";
-import { BackIcon, VideoIcon, CallIcon, MoreIcon } from "../Icons";
+import { BackIcon, VideoIcon, CallIcon, MoreIcon, DropdownIcon } from "../Icons";
 import "./index.css";
 
 const AppBar = () => {
@@ -23,6 +23,8 @@ const AppBar = () => {
   // While the contact "records" a voice note, WhatsApp shows it in the status line.
   const theyRecord = recording && recording.self === false;
   const showStatus = phone.showContactStatus;
+  // Business chats in WhatsApp show only the phone icon with a small ▾.
+  const phoneOnly = phone.headerCalls === "phone";
 
   return (
     <div className="appBar">
@@ -64,23 +66,46 @@ const AppBar = () => {
             ))}
         </div>
       </div>
-      <div className="appBarRight">
-        <button
-          className="headerBtn"
-          onClick={() => openDialog({ kind: "call", media: "video" })}
-          aria-label="Add video call"
-          title="Add a video call (Panggilan video) to the chat"
-        >
-          <VideoIcon className="appBarIcons" />
-        </button>
-        <button
-          className="headerBtn"
-          onClick={() => openDialog({ kind: "call", media: "voice" })}
-          aria-label="Add voice call"
-          title="Add a voice call (Telepon suara) to the chat"
-        >
-          <CallIcon className="appBarIcons" />
-        </button>
+      <div className={`appBarRight ${phoneOnly ? "phoneOnly" : ""}`} data-header-calls={phoneOnly ? "phone" : "both"}>
+        {phoneOnly ? (
+          <div className="callCombo">
+            <button
+              className="headerBtn callComboMain"
+              onClick={() => openDialog({ kind: "call", media: "voice" })}
+              aria-label="Add voice call"
+              title="Add a voice call (Telepon suara) to the chat"
+            >
+              <CallIcon className="appBarIcons" />
+            </button>
+            <button
+              className="headerBtn callComboCaret"
+              onClick={() => openDialog({ kind: "call", media: "video" })}
+              aria-label="Add video call"
+              title="Add a video call (Panggilan video) to the chat"
+            >
+              <DropdownIcon className="appBarCaret" />
+            </button>
+          </div>
+        ) : (
+          <>
+            <button
+              className="headerBtn"
+              onClick={() => openDialog({ kind: "call", media: "video" })}
+              aria-label="Add video call"
+              title="Add a video call (Panggilan video) to the chat"
+            >
+              <VideoIcon className="appBarIcons" />
+            </button>
+            <button
+              className="headerBtn"
+              onClick={() => openDialog({ kind: "call", media: "voice" })}
+              aria-label="Add voice call"
+              title="Add a voice call (Telepon suara) to the chat"
+            >
+              <CallIcon className="appBarIcons" />
+            </button>
+          </>
+        )}
         <button
           className={`headerBtn menuBtn ${isMenuOpen ? "open" : ""}`}
           onClick={menuClick}

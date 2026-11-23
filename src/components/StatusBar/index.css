@@ -12,6 +12,7 @@
 }
 
 .sbTime,
+.sbNetworkBtn,
 .sbBatteryBtn {
   background: none;
   border: 0;
@@ -28,6 +29,7 @@
 /* Editing affordance only on hover / keyboard focus; never baked into exports
    (focus is cleared before every export). */
 .sbTime:hover,
+.sbNetworkBtn:hover,
 .sbBatteryBtn:hover {
   background: rgba(255, 255, 255, 0.07);
 }
@@ -35,12 +37,33 @@
   outline: none;
 }
 .sbTime:focus-visible,
+.sbNetworkBtn:focus-visible,
 .sbBatteryBtn:focus-visible {
   outline: 2px solid var(--wa-green);
   outline-offset: 2px;
 }
-.sbBatteryBtn:focus {
+.sbBatteryBtn:focus,
+.sbNetworkBtn:focus {
   outline: none;
+}
+
+/* Unlit signal bars stay visible, dimmed (reference: #54585b on #0a1014). */
+.sbSignal .unlit {
+  opacity: 0.32;
+}
+
+/* "LTE" / "5G" label left of the signal bars; the Wi-Fi icon is hidden then. */
+.sbBadge {
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pxBatteryWrap,
+.pcBatteryWrap {
+  display: flex;
+  align-items: center;
 }
 
 .sbIcons {
@@ -67,8 +90,15 @@
   font-variant-numeric: tabular-nums;
 }
 
-.sb-pixel8pro .sbIcons {
+.sb-pixel8pro .sbIcons,
+.sb-pixel8pro .sbNetworkBtn {
   gap: 0.75vh;
+}
+
+.sb-pixel8pro .sbBadge {
+  font-size: 1.62vh;
+  letter-spacing: -0.02em;
+  margin-right: 0.05vh;
 }
 
 .sb-pixel8pro .sbSignal {
@@ -123,6 +153,34 @@
   letter-spacing: -0.01em;
 }
 
+/* Charging (reference: green #1acb47 fill, dark digits, bolt instead of the
+   terminal). */
+.look-charging .pxBatteryFill {
+  background: #1acb47;
+}
+.look-charging .pxBatteryNum {
+  color: #0b2814;
+}
+.look-charging .pxBattery {
+  margin-right: 0.12vh;
+}
+.look-charging .pxBattery::after {
+  display: none;
+}
+/* Pixel low battery (reference: pure red #ff0f02 fill, gray body, dark digits). */
+.look-low .pxBatteryFill {
+  background: #ff0f02;
+}
+
+.sbBolt {
+  display: block;
+  fill: currentColor;
+}
+.sb-pixel8pro .sbBolt {
+  width: 1vh;
+  height: 1.55vh;
+}
+
 .pxBattery[data-digits="3"] .pxBatteryNum {
   font-size: 1.12vh;
   letter-spacing: -0.04em;
@@ -142,8 +200,14 @@
   font-variant-numeric: tabular-nums;
 }
 
-.sb-pocox7 .sbIcons {
+.sb-pocox7 .sbIcons,
+.sb-pocox7 .sbNetworkBtn {
   gap: 0.55vh;
+}
+
+.sb-pocox7 .sbBadge {
+  font-size: 1.36vh;
+  letter-spacing: -0.01em;
 }
 
 .sb-pocox7 .sbSignal {
@@ -157,8 +221,11 @@
 }
 
 .sb-pocox7 .sbBatteryBtn {
-  gap: 0.35vh;
   padding-right: 0.3vh;
+}
+
+.pcBatteryWrap {
+  gap: 0.35vh;
 }
 
 .pcBatteryNum {
@@ -195,6 +262,21 @@
   height: 100%;
   border-radius: 0.14vh;
   background: #f7f8fa;
+}
+
+.pcBatteryWrap.look-charging .pcBatteryFill {
+  background: #1acb47;
+}
+.pcBatteryWrap.look-low .pcBatteryFill {
+  background: #f2564b;
+}
+.pcBatteryWrap.look-low .pcBatteryNum {
+  color: #f2564b;
+}
+.sb-pocox7 .sbBolt {
+  width: 0.8vh;
+  height: 1.25vh;
+  margin-left: -0.05vh;
 }
 
 /* ---------- Gesture navigation handle ---------- */

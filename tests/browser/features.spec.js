@@ -361,7 +361,7 @@ test("message times use a dot and new messages never go back in time", async ({ 
   await first.click({ button: "right" });
   await dialog(page).getByLabel("Hour (00–23)").fill("23");
   await dialog(page).getByLabel("Minute (00–59)").fill("59");
-  await dialog(page).getByRole("button", { name: "Save time" }).click();
+  await dialog(page).getByRole("button", { name: "Save", exact: true }).click();
   await expect(first.locator(".meta")).toHaveText("23.59");
   await send(page, "Kedua");
   await expect(page.locator(".message").nth(1).locator(".meta")).toHaveText("23.59");
@@ -375,16 +375,16 @@ test("hold or right-click a message to change its time within its neighbours", a
 
   // Right-click (desktop).
   await middle.click({ button: "right" });
-  await expect(dialog(page).getByRole("heading")).toHaveText("Message time");
+  await expect(dialog(page).getByRole("heading")).toHaveText("Message options");
   await expect(dialog(page)).toContainText("09:00 to 23:59");
   await dialog(page).getByLabel("Hour (00–23)").fill("08");
   await dialog(page).getByLabel("Minute (00–59)").fill("59");
-  await dialog(page).getByRole("button", { name: "Save time" }).click();
+  await dialog(page).getByRole("button", { name: "Save", exact: true }).click();
   await expect(dialog(page).getByRole("alert")).toContainText("09:00 to 23:59");
   // Equal to the previous message is allowed.
   await dialog(page).getByLabel("Hour (00–23)").fill("09");
   await dialog(page).getByLabel("Minute (00–59)").fill("00");
-  await dialog(page).getByRole("button", { name: "Save time" }).click();
+  await dialog(page).getByRole("button", { name: "Save", exact: true }).click();
   await expect(dialog(page)).toHaveCount(0);
   await expect(middle.locator(".meta")).toHaveText("09.00");
 

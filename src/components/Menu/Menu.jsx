@@ -230,6 +230,8 @@ const Menu = () => {
   const choosePreset = (id) => {
     setPhone((p) => withPreset(p, id));
   };
+  const togglePhoneOnly = () =>
+    setPhone((p) => ({ ...p, headerCalls: p.headerCalls === "phone" ? "both" : "phone" }));
   const toggleStatus = () =>
     setPhone((p) => ({ ...p, showContactStatus: !p.showContactStatus }));
 
@@ -247,6 +249,12 @@ const Menu = () => {
       role: "menuitemcheckbox",
       checked: phone.showContactStatus,
       onClick: toggleStatus,
+    },
+    {
+      label: "Phone icon only (▾)",
+      role: "menuitemcheckbox",
+      checked: phone.headerCalls === "phone",
+      onClick: togglePhoneOnly,
     },
     { divider: true },
     {

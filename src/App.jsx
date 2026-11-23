@@ -46,7 +46,7 @@ function App() {
   const [chatDate, setChatDate] = useState(() => isoDate());
   // Who the next message is sent as: true = you (right/green), false = them.
   const [sendAsSelf, setSendAsSelf] = useState(true);
-  // Open editor dialog: {kind: "clock" | "battery" | "call" | "voice" | "time" | "date" | "avatar", ...}.
+  // Open editor dialog: {kind: "clock" | "battery" | "network" | "call" | "voice" | "time" | "date" | "avatar", ...}.
   const [dialog, setDialog] = useState(null);
   // Voice "recording" scene shown in the phone (draft preview, replay or video frame).
   const [recording, setRecording] = useState(null);
@@ -126,6 +126,7 @@ function App() {
             settings={phone}
             onClockClick={() => openDialog({ kind: "clock" })}
             onBatteryClick={() => openDialog({ kind: "battery" })}
+            onNetworkClick={() => openDialog({ kind: "network" })}
           />
           <AppBar />
           <ChatScreen />
