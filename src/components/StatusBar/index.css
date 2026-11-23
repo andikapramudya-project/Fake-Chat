@@ -1,0 +1,229 @@
+/* Sizes are in vh of a portrait phone; the reference screenshots are
+   1008×2244 px, so 1 reference px ≈ 0.0446vh. */
+
+.statusBar {
+  background-color: var(--wa-header);
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--wa-text);
+  user-select: none;
+}
+
+.sbTime,
+.sbBatteryBtn {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 0.4vh;
+  display: flex;
+  align-items: center;
+}
+
+/* Editing affordance only on hover / keyboard focus; never baked into exports
+   (focus is cleared before every export). */
+.sbTime:hover,
+.sbBatteryBtn:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+.sbTime:focus {
+  outline: none;
+}
+.sbTime:focus-visible,
+.sbBatteryBtn:focus-visible {
+  outline: 2px solid var(--wa-green);
+  outline-offset: 2px;
+}
+.sbBatteryBtn:focus {
+  outline: none;
+}
+
+.sbIcons {
+  display: flex;
+  align-items: center;
+}
+
+.sbIcons svg {
+  display: block;
+  color: inherit;
+}
+
+/* ---------- Pixel 8 Pro (reference screenshots) ---------- */
+
+.sb-pixel8pro {
+  height: 4.7vh;
+  padding: 0 3.3vh 0 3.4vh;
+}
+
+.sb-pixel8pro .sbTime {
+  font-size: 1.72vh;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.sb-pixel8pro .sbIcons {
+  gap: 0.75vh;
+}
+
+.sb-pixel8pro .sbSignal {
+  width: 1.6vh;
+  height: 1.42vh;
+}
+
+.sb-pixel8pro .sbWifi {
+  width: 1.98vh;
+  height: 1.58vh;
+}
+
+.pxBattery {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.95vh;
+  height: 1.55vh;
+  margin-right: 0.42vh;
+  border-radius: 0.46vh;
+  background: #8f9396;
+}
+
+/* Battery terminal */
+.pxBattery::after {
+  content: "";
+  position: absolute;
+  right: -0.42vh;
+  top: 50%;
+  width: 0.26vh;
+  height: 0.6vh;
+  transform: translateY(-50%);
+  border-radius: 0 0.2vh 0.2vh 0;
+  background: #8f9396;
+}
+
+.pxBatteryFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 0.46vh 0 0 0.46vh;
+  background: #f7f8fa;
+}
+
+.pxBatteryNum {
+  position: relative;
+  font-size: 1.4vh;
+  font-weight: 700;
+  line-height: 1;
+  color: #3c3c3c;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.pxBattery[data-digits="3"] .pxBatteryNum {
+  font-size: 1.12vh;
+  letter-spacing: -0.04em;
+}
+
+/* ---------- Poco X7 5G (HyperOS style, assumed) ---------- */
+
+.sb-pocox7 {
+  height: 4.2vh;
+  padding: 0 2.6vh 0 2.9vh;
+}
+
+.sb-pocox7 .sbTime {
+  font-size: 1.62vh;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.sb-pocox7 .sbIcons {
+  gap: 0.55vh;
+}
+
+.sb-pocox7 .sbSignal {
+  width: 1.45vh;
+  height: 1.2vh;
+}
+
+.sb-pocox7 .sbWifi {
+  width: 1.62vh;
+  height: 1.22vh;
+}
+
+.sb-pocox7 .sbBatteryBtn {
+  gap: 0.35vh;
+  padding-right: 0.3vh;
+}
+
+.pcBatteryNum {
+  font-size: 1.36vh;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.pcBattery {
+  position: relative;
+  display: block;
+  width: 2.3vh;
+  height: 1.18vh;
+  padding: 0.17vh;
+  border: 0.13vh solid rgba(247, 248, 250, 0.9);
+  border-radius: 0.36vh;
+}
+
+.pcBattery::after {
+  content: "";
+  position: absolute;
+  right: -0.36vh;
+  top: 50%;
+  width: 0.18vh;
+  height: 0.44vh;
+  transform: translateY(-50%);
+  border-radius: 0 0.12vh 0.12vh 0;
+  background: rgba(247, 248, 250, 0.9);
+}
+
+.pcBatteryFill {
+  display: block;
+  height: 100%;
+  border-radius: 0.14vh;
+  background: #f7f8fa;
+}
+
+/* ---------- Gesture navigation handle ---------- */
+
+.navHandle {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  background: var(--wa-header);
+}
+
+.navHandle span {
+  display: block;
+  border-radius: 1vh;
+  background: rgba(247, 248, 250, 0.92);
+}
+
+.nh-pixel8pro {
+  height: 2.6vh;
+}
+.nh-pixel8pro span {
+  width: 10.9vh;
+  height: 0.45vh;
+}
+
+.nh-pocox7 {
+  height: 2.2vh;
+}
+.nh-pocox7 span {
+  width: 8.6vh;
+  height: 0.42vh;
+}

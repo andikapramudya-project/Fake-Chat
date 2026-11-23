@@ -1,0 +1,196 @@
+.dialogOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  padding: 2vh;
+  background: rgba(0, 0, 0, 0.55);
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+.dialogCard {
+  width: 100%;
+  max-width: 44vh;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 2.4vh 2.4vh 1.8vh;
+  border-radius: 2.4vh;
+  background: var(--wa-panel);
+  color: var(--wa-text);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  font-size: 1.7vh;
+}
+
+.dialogCard h2 {
+  font-size: 2.2vh;
+  font-weight: 500;
+  margin-bottom: 1.6vh;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6vh;
+  margin-bottom: 1.4vh;
+  min-width: 0;
+}
+
+.field label,
+.fieldLabel {
+  font-size: 1.45vh;
+  color: var(--wa-muted);
+}
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6vh;
+}
+
+.field input {
+  width: 100%;
+  min-width: 0;
+  padding: 1.1vh 1.2vh;
+  border-radius: 1vh;
+  border: 1px solid rgba(141, 149, 152, 0.35);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--wa-text);
+  font-size: 1.9vh;
+  font-variant-numeric: tabular-nums;
+}
+
+.field input:focus {
+  outline: 2px solid var(--wa-green);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+
+.field.hasError input {
+  border-color: var(--wa-missed);
+}
+
+.fieldSuffix {
+  color: var(--wa-muted);
+}
+
+.fieldPair {
+  display: flex;
+  align-items: flex-end;
+  gap: 1vh;
+}
+
+.fieldPair .field {
+  flex: 1;
+}
+
+.fieldColon {
+  padding-bottom: 2.6vh;
+  font-size: 2vh;
+  color: var(--wa-muted);
+}
+
+.fieldError {
+  margin: -0.8vh 0 1.2vh;
+  color: #ff8a96;
+  font-size: 1.45vh;
+}
+
+.dialogHint {
+  margin: 0.2vh 0 0.4vh;
+  font-size: 1.45vh;
+  line-height: 1.45;
+  color: var(--wa-muted);
+}
+
+.dialogHint b {
+  color: var(--wa-text);
+  font-weight: 500;
+}
+
+.segmented {
+  display: flex;
+  gap: 0.6vh;
+  flex-wrap: wrap;
+}
+
+.segmented button {
+  flex: 1;
+  min-width: max-content;
+  padding: 1vh 1.2vh;
+  border-radius: 2vh;
+  border: 1px solid rgba(141, 149, 152, 0.35);
+  background: none;
+  color: var(--wa-text);
+  font-size: 1.6vh;
+  cursor: pointer;
+}
+
+.segmented button.on {
+  background: rgba(33, 192, 99, 0.18);
+  border-color: var(--wa-green);
+  color: #7ee2a8;
+}
+
+.batteryPreview {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.35vh;
+  height: 5.2vh;
+  margin-bottom: 1.4vh;
+  padding: 0 1.4vh;
+  border-radius: 1vh;
+  background: var(--wa-header);
+  color: var(--wa-text);
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.8vh;
+  margin-top: 1.4vh;
+}
+
+.dialogActions button {
+  padding: 1vh 1.8vh;
+  border-radius: 2.2vh;
+  border: 0;
+  background: none;
+  color: var(--wa-green);
+  font-size: 1.65vh;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.dialogActions button:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dialogActions .primary {
+  background: var(--wa-green);
+  color: var(--wa-on-green);
+}
+
+.dialogActions .primary:hover {
+  background: var(--wa-green);
+  filter: brightness(1.08);
+}
+
+.dialogActions .danger {
+  color: #ff8a96;
+  margin-right: auto;
+}
+
+.dialogActions button:focus-visible,
+.segmented button:focus-visible {
+  outline: 2px solid var(--wa-text);
+  outline-offset: 2px;
+}

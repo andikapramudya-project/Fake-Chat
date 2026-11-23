@@ -90,8 +90,8 @@
 .chatBar {
   display: flex;
   align-items: flex-end;
-  gap: 0.8vh;
-  padding: 0 0.8vh 1vh;
+  gap: 0.9vh;
+  padding: 0.2vh 0.8vh 0.5vh;
 }
 
 .dayChip {
@@ -107,36 +107,47 @@
 
 .chatInput {
   background-color: var(--wa-input);
-  border-radius: 3vh;
-  min-height: 5.8vh;
+  border-radius: 2.7vh;
+  min-height: 5.35vh;
   flex: 1;
   min-width: 0;
   display: flex;
   align-items: flex-end;
-  padding: 0 0.6vh;
+  padding: 0 1vh 0 1.3vh;
 }
 
 .barIcon {
-  width: 3vh;
-  height: 3vh;
+  width: 2.5vh;
+  height: 2.5vh;
   flex-shrink: 0;
-  color: var(--wa-muted);
-  margin: 0 0.7vh 1.4vh;
+  color: #8a9296;
+  margin: 0 0.75vh 1.42vh;
+}
+
+.emojiIcon {
+  margin-left: 0.05vh;
+  margin-right: 0.3vh;
 }
 
 .attachIcon {
-  transform: rotate(-45deg);
+  transform: rotate(-12deg);
+}
+
+.cameraIcon {
+  width: 2.6vh;
+  height: 2.6vh;
+  margin-bottom: 1.37vh;
 }
 
 .chatBox {
   flex: 1;
   min-width: 0;
-  padding: 1.6vh 0;
-  margin: 0 0.6vh;
+  padding: 1.5vh 0 1.45vh;
+  margin: 0 0.9vh;
   background-color: transparent;
   border: 0;
   color: var(--wa-text);
-  font-size: 2.05vh;
+  font-size: 1.87vh;
   line-height: 1.3;
   resize: none;
   overflow-y: auto;
@@ -158,8 +169,8 @@
   color: var(--wa-on-green);
   border: 0;
   padding: 0;
-  height: 5.8vh;
-  width: 5.8vh;
+  height: 5.35vh;
+  width: 5.35vh;
   border-radius: 50%;
   cursor: pointer;
   transition: transform 0.15s, filter 0.2s;
@@ -175,8 +186,8 @@
 
 .sendIcon,
 .micIcon {
-  width: 2.8vh;
-  height: 2.8vh;
+  width: 2.6vh;
+  height: 2.6vh;
   display: block;
   animation: iconSwap 0.18s ease-out;
 }
@@ -197,10 +208,10 @@
 .senderToggle {
   position: relative;
   flex-shrink: 0;
-  height: 5.8vh;
+  height: 5.35vh;
   width: 7.4vh;
   border: 0;
-  border-radius: 3vh;
+  border-radius: 2.7vh;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -249,4 +260,172 @@
 
 .senderToggle.other .senderLabel {
   right: 1vh;
+}
+
+.sendBtn:focus {
+  outline: none;
+}
+
+.sendBtn:focus-visible {
+  outline: 2px solid var(--wa-text);
+  outline-offset: 2px;
+}
+
+/* ---------- Voice recording (scene content, exported) ---------- */
+
+.recordingBar {
+  padding-top: 0;
+}
+
+.recPanel {
+  flex: 1;
+  min-width: 0;
+  background: var(--wa-input);
+  border-radius: 2.7vh;
+  padding: 1.5vh 1.4vh 1vh 2vh;
+  animation: bubbleIn 0.22s ease-out;
+}
+
+.recording .recPanel {
+  animation: none;
+}
+
+.recTop {
+  display: flex;
+  align-items: center;
+  gap: 1.2vh;
+  height: 3vh;
+}
+
+.recMic {
+  width: 2.3vh;
+  height: 2.3vh;
+  flex-shrink: 0;
+  color: var(--wa-missed);
+}
+
+.recTimer {
+  min-width: 4.4vh;
+  font-size: 1.87vh;
+  color: var(--wa-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.recWave {
+  flex: 1;
+  min-width: 0;
+  height: 2.6vh;
+  display: flex;
+  align-items: center;
+  gap: 0.36vh;
+  overflow: hidden;
+}
+
+.recBar {
+  flex: 0 0 0.24vh;
+  min-height: 0.3vh;
+  border-radius: 0.2vh;
+  background: rgba(247, 248, 250, 0.75);
+}
+
+.recControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.2vh;
+}
+
+.recTrash,
+.recSend {
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.recTrash {
+  width: 4.4vh;
+  height: 4.4vh;
+  background: none;
+  color: #8a9296;
+}
+
+.recTrash svg {
+  width: 2.6vh;
+  height: 2.6vh;
+}
+
+.recPause {
+  display: grid;
+  place-items: center;
+  width: 4.2vh;
+  height: 4.2vh;
+  border-radius: 50%;
+  border: 0.22vh solid var(--wa-missed);
+  color: var(--wa-missed);
+}
+
+.recPause svg {
+  width: 1.9vh;
+  height: 1.9vh;
+}
+
+.recSend {
+  width: 5.35vh;
+  height: 5.35vh;
+  border-radius: 50%;
+  background: var(--wa-green);
+  color: var(--wa-on-green);
+}
+
+.recSend svg {
+  width: 2.5vh;
+  height: 2.5vh;
+  transform: translateX(0.2vh);
+}
+
+.recTrash:focus,
+.recSend:focus {
+  outline: none;
+}
+
+.recTrash:focus-visible,
+.recSend:focus-visible {
+  outline: 2px solid var(--wa-green);
+  outline-offset: 2px;
+}
+
+/* Editor controls while the contact "records" (never exported). */
+.themRecording {
+  display: flex;
+  align-items: center;
+  gap: 1vh;
+  margin: 0 0.8vh 0.6vh;
+  padding: 0.8vh 1.2vh;
+  border-radius: 1.2vh;
+  background: rgba(24, 34, 40, 0.95);
+  border: 1px dashed rgba(255, 210, 121, 0.5);
+  color: #ffd279;
+  font-size: 1.5vh;
+}
+
+.themRecording span {
+  flex: 1;
+}
+
+.themRecording button {
+  border: 0;
+  border-radius: 1.6vh;
+  padding: 0.6vh 1.4vh;
+  font-size: 1.5vh;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--wa-text);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.themRecording button.primary {
+  background: var(--wa-green);
+  color: var(--wa-on-green);
 }
