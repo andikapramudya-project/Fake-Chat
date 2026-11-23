@@ -156,6 +156,27 @@
   width: 4.4vh;
 }
 
+/* "Phone only ▾" header (reference: business chats). The caret sits close to
+   the handset and adds video calls, since the camera icon is hidden. */
+.callCombo {
+  display: flex;
+  align-items: center;
+  margin-right: 0.6vh;
+}
+
+.callComboCaret {
+  width: 2.6vh;
+  margin-left: -0.9vh;
+  border-radius: 1vh;
+}
+
+.appBarCaret {
+  width: 1.3vh;
+  height: 1.3vh;
+  display: block;
+  color: var(--wa-text);
+}
+
 .moreIcon {
   width: 2.5vh;
   height: 2.5vh;

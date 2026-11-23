@@ -4,12 +4,14 @@ import {
   avatarSrc,
   callSummary,
   displayTime,
+  forwardButton,
+  forwardedLabel,
   formatClockDuration,
   messageType,
   normalizeCall,
   waveformBars,
 } from "../../model";
-import { CallCardIcon, MicIcon, PauseIcon, PlayIcon, SELF_AVATAR } from "../Icons";
+import { CallCardIcon, ForwardIcon, MicIcon, PauseIcon, PlayIcon, SELF_AVATAR } from "../Icons";
 import "./index.css";
 
 export const Ticks = () => (
@@ -29,6 +31,21 @@ const Meta = ({ time, ticks }) => (
   <span className="meta">
     {displayTime(time)}
     {ticks && <Ticks />}
+  </span>
+);
+
+/** Italic "Diteruskan" line at the top of a forwarded bubble. */
+const ForwardedLabel = () => (
+  <span className="forwarded" data-forwarded="true">
+    <ForwardIcon className="forwardedIcon" width={2} />
+    <span>Diteruskan</span>
+  </span>
+);
+
+/** Round quick-forward button beside a photo (decorative, part of exports). */
+const ForwardButton = () => (
+  <span className="fwdButton" aria-hidden="true">
+    <ForwardIcon className="fwdButtonIcon" width={2.3} />
   </span>
 );
 
@@ -95,6 +112,7 @@ const useTimeEditor = (message) => {
 };
 
 const HOLD_HINT = "Hold or right-click to change the time";
+const HOLD_HINT_FWD = "Hold or right-click for time and forwarded options";
 
 /* ---------- Call history card ---------- */
 
@@ -190,11 +208,13 @@ const VoiceBubble = ({ message, left, first, componentRef, onFlip }) => {
     <div
       onClick={onFlip}
       className={`message voiceMsg ${left ? "ml" : "mr"} ${first ? "first" : ""}`}
-      title={`Double-click to switch sides. ${HOLD_HINT}.`}
+      title={`Double-click to switch sides. ${HOLD_HINT_FWD}.`}
       ref={componentRef || undefined}
       data-type="voice"
+      data-forwarded={forwardedLabel(message) ? "true" : undefined}
       {...press}
     >
+      {forwardedLabel(message) && <ForwardedLabel />}
       <div className="voiceRow">
         <span className="voiceAvatar">
           <img src={avatar} alt="" draggable={false} />
@@ -271,17 +291,23 @@ const ChatMessage = ({ message, left, first, componentRef }) => {
     ? Math.min(Math.max(image.width / image.height, 0.62), 1.9)
     : 1;
 
+  const forwarded = forwardedLabel(message);
+  const fwdButton = forwardButton(message);
+
   return (
     <div
       onClick={messageClick}
       className={`message ${left ? "ml" : "mr"} ${first ? "first" : ""} ${
         image ? "imageMsg" : ""
-      }`}
-      title={`Double-click to switch sides. ${HOLD_HINT}.`}
+      } ${forwarded ? "isForwarded" : ""}`}
+      title={`Double-click to switch sides. ${HOLD_HINT_FWD}.`}
       ref={componentRef || undefined}
       data-type={type}
+      data-forwarded={forwarded ? "true" : undefined}
       {...press}
     >
+      {fwdButton && <ForwardButton />}
+      {forwarded && <ForwardedLabel />}
       {image ? (
         <>
           <div className="photo" style={{ aspectRatio: ratio }}>

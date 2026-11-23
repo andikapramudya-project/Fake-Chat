@@ -109,7 +109,7 @@ const ExtrasScene = () => (
         <span>🎙️</span>Green mic<em>simulated voice note</em>
       </div>
       <div className="mi m3">
-        <span>🕒</span>Clock &amp; battery<em>click to edit</em>
+        <span>🕒</span>Clock, signal &amp; battery<em>click to edit</em>
       </div>
       <div className="mi m4">
         <span>📱</span>⋮ → Phone style<em>Pixel 8 Pro / Poco X7 5G</em>
@@ -136,12 +136,12 @@ const steps = [
   },
   {
     title: "Switch who’s talking",
-    text: "Double-click (or double-tap) any bubble to move it to the other side. Press and hold (or right-click) a bubble to change its time, and click the date chip to change the date. Or use the You / Them switch next to the input. The switch never appears in exports.",
+    text: "Double-click (or double-tap) any bubble to move it to the other side. Press and hold (or right-click) a bubble to change its time or mark it as forwarded (Diteruskan), and click the date chip to change the date. Or use the You / Them switch next to the input. The switch never appears in exports.",
     Scene: SwitchScene,
   },
   {
     title: "Calls, voice notes and phone look",
-    text: "Click the video or phone icon to add a call card (click a card to edit or delete it). With an empty message box, the green mic starts a voice-note simulation: no microphone, no audio. Click the status bar clock or battery to change them, and pick the phone style in the ⋮ menu.",
+    text: "Click the video or phone icon to add a call card (click a card to edit or delete it). With an empty message box, the green mic starts a voice-note simulation: no microphone, no audio. Click the status bar clock, signal (Wi-Fi / LTE / 5G) or battery (normal, charging, low) to change them, and pick the phone style or a phone-only header (▾) in the ⋮ menu.",
     Scene: ExtrasScene,
   },
   {

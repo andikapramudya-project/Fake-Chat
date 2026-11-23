@@ -48,7 +48,52 @@ export const defaultPhoneSettings = (date = new Date()) => ({
   hour: date.getHours(),
   minute: date.getMinutes(),
   battery: 58,
+  // "normal" turns red on its own below LOW_BATTERY; "charging" and "low" are forced.
+  batteryMode: "normal",
+  network: "wifi",
+  signal: 4,
+  // "both" = video + phone icons; "phone" = phone icon with ▾ (business chats).
+  headerCalls: "both",
   showContactStatus: true,
+});
+
+/* ---------------- Battery and network ---------------- */
+
+export const BATTERY_MODES = Object.freeze({
+  normal: "Normal",
+  charging: "Charging",
+  low: "Low (red)",
+});
+export const BATTERY_MODE_IDS = Object.keys(BATTERY_MODES);
+/** Below this level a battery that is not charging turns red. */
+export const LOW_BATTERY = 20;
+
+/**
+ * How the battery icon looks: "normal" (white), "charging" (green with a bolt)
+ * or "low" (red). Charging always wins; "normal" turns red below 20%.
+ */
+export const batteryLook = (level, mode = "normal") => {
+  if (mode === "charging") return "charging";
+  if (mode === "low") return "low";
+  return Number(level) < LOW_BATTERY ? "low" : "normal";
+};
+
+export const NETWORKS = Object.freeze({
+  wifi: { label: "Wi-Fi", badge: null },
+  lte: { label: "LTE", badge: "LTE" },
+  "5g": { label: "5G", badge: "5G" },
+});
+export const NETWORK_IDS = Object.keys(NETWORKS);
+export const SIGNAL_LEVELS = [1, 2, 3, 4];
+
+/** Signal bars that are lit (1–4); anything else falls back to full signal. */
+export const signalBars = (value) => (SIGNAL_LEVELS.includes(Number(value)) ? Number(value) : 4);
+
+/** Keep only known network settings; unknown values fall back to the defaults. */
+export const withNetwork = (settings, { network, signal } = {}) => ({
+  ...settings,
+  network: NETWORKS[network] ? network : settings.network ?? "wifi",
+  signal: signal === undefined ? signalBars(settings.signal) : signalBars(signal),
 });
 
 /** Change the preset without touching clock, battery or other settings. */
@@ -83,6 +128,17 @@ export const isGroupStart = (list, index) => {
   if (types.includes("call") || types.includes("date")) return true;
   return isSelf(prev) !== isSelf(cur);
 };
+
+/** Call cards and date dividers can never carry the "Diteruskan" label. */
+export const canForward = (message) => {
+  const type = messageType(message);
+  return type === "text" || type === "image" || type === "voice";
+};
+
+/** Show the forwarded label / quick-forward button only where they make sense. */
+export const forwardedLabel = (message) => canForward(message) && message?.forwarded === true;
+export const forwardButton = (message) =>
+  messageType(message) === "image" && message?.forwardButton === true;
 
 /** Which notification sound a message plays: "send", "receive" or null. */
 export const soundFor = (message) => {
