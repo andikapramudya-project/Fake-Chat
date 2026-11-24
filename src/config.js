@@ -2,5 +2,5 @@
 export const PROJECT = Object.freeze({
   name: "Fake Chat",
   maintainer: "Andika Pramudya",
-  repository: "https://github.com/andikapramudya-project/fake-chat",
+  repository: "https://github.com/andikapramudya-project/Fake-Chat",
 });
