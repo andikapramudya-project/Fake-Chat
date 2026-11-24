@@ -22,7 +22,7 @@ test("project identity and repository point to Andika", async ({ page }) => {
   const popupPromise = page.waitForEvent("popup");
   await page.getByRole("menuitem", { name: "Source code" }).click();
   const popup = await popupPromise;
-  expect(popup.url()).toBe("https://github.com/andikapramudya-project/fake-chat");
+  expect(popup.url()).toBe("https://github.com/andikapramudya-project/Fake-Chat");
   await popup.close();
 });
 

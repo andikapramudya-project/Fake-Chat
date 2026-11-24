@@ -8,12 +8,12 @@
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
-    "url": "https://github.com/andikapramudya-project/fake-chat.git"
+    "url": "https://github.com/andikapramudya-project/Fake-Chat.git"
   },
   "bugs": {
-    "url": "https://github.com/andikapramudya-project/fake-chat/issues"
+    "url": "https://github.com/andikapramudya-project/Fake-Chat/issues"
   },
-  "homepage": "https://andikapramudya-project.github.io/fake-chat/",
+  "homepage": "https://andikapramudya-project.github.io/Fake-Chat/",
   "engines": {
     "node": ">=22.12.0"
   },

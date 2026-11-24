@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  // Relative base so the build works on GitHub Pages (/fake-chat/) or any sub-path.
+  // Relative base so the build works on GitHub Pages (/Fake-Chat/) or any sub-path.
   base: "./",
   server: { port: 3000, open: true },
   build: { outDir: "build" },

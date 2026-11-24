@@ -1,7 +1,7 @@
 # Identitas, asal-usul, dan hak pihak ketiga
 
 Versi ini dikelola dan dikembangkan lebih lanjut oleh **Andika Pramudya** untuk
-repository <https://github.com/andikapramudya-project/fake-chat>.
+repository <https://github.com/andikapramudya-project/Fake-Chat>.
 Identitas pengelola tidak menyatakan bahwa semua kode dan aset adalah karya asli pengelola.
 
 ## Kode awal
@@ -32,8 +32,10 @@ Tidak ada lisensi baru yang diterapkan pada seluruh kode awal.
   status bar digambar ulang sebagai SVG lokal untuk proyek ini dengan mencocokkan bentuk
   pada screenshot referensi; screenshot referensi tidak disimpan di repository.
 - `src/images/whatsappLight.jpg`, `src/messageSend.mp3`, ikon di `public/`, dan
-  gambar di `docs/` adalah aset bawaan folder awal. Pencipta dan izin redistribusinya
-  belum terverifikasi. Jangan menyatakannya sebagai karya asli Andika Pramudya.
+  `docs/chat.png` serta `docs/guide.png` adalah aset bawaan folder awal. Pencipta dan izin
+  redistribusinya belum terverifikasi. Jangan menyatakannya sebagai karya asli Andika Pramudya.
+- `docs/preview/` berisi screenshot aplikasi ini dengan data fiktif untuk README. Gambar
+  latar chat di dalamnya tetap mengikuti status `src/images/whatsappLight.jpg`.
 
 Lisensi dependensi tetap berlaku secara terpisah. Teks lisensi paket tersedia
 di distribusi masing-masing dalam node_modules setelah `npm ci`.
